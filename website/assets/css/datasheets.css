@@ -1,0 +1,139 @@
+/* ==========================================================================
+   Lateral Repairs — Technical data sheets
+   Extends the brand system in styles.css (pink / white / black)
+   ========================================================================== */
+
+.ds-hero { padding: 150px 0 26px; }
+.ds-hero h1 { font-size: clamp(34px, 5vw, 58px); margin-bottom: 14px; }
+.ds-hero p { color: var(--muted); max-width: 640px; }
+
+/* in-page product index */
+.ds-index {
+  position: sticky; top: 64px; z-index: 60;
+  padding: 12px 0;
+  background: rgba(7, 6, 8, 0.86);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+.ds-index .container { display: flex; gap: 8px; flex-wrap: wrap; }
+.ds-index a {
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  padding: 7px 14px; border: 1px solid var(--line); border-radius: 100px;
+  transition: color 0.25s, border-color 0.25s, background 0.25s;
+  white-space: nowrap;
+}
+.ds-index a:hover, .ds-index a.active { color: var(--white); border-color: var(--pink); background: rgba(230, 0, 126, 0.12); }
+
+/* sheet card */
+.sheet { padding: 64px 0 8px; scroll-margin-top: 130px; }
+.sheet + .sheet { border-top: 1px solid var(--line); margin-top: 56px; }
+.sheet__head { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; justify-content: space-between; margin-bottom: 8px; }
+.sheet__head h2 { font-size: clamp(26px, 3.2vw, 38px); }
+.sheet__head .sub { color: var(--muted); margin-top: 6px; font-size: 15px; }
+.sheet__tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.tag {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--pink-2); border: 1px solid rgba(230, 0, 126, 0.45);
+  padding: 6px 12px; border-radius: 100px; white-space: nowrap;
+}
+.tag--ghost { color: var(--muted); border-color: var(--line); }
+
+/* key facts strip */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 26px 0 8px; }
+.fact {
+  background: var(--black-2); border: 1px solid var(--line); border-radius: 16px;
+  padding: 16px 18px;
+}
+.fact .k { font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-dark); margin-bottom: 6px; }
+.fact .v { font-family: var(--font-head); font-size: 19px; font-weight: 600; color: var(--white); }
+.fact .v small { font-size: 13px; color: var(--muted); font-family: var(--font-body); font-weight: 500; }
+
+/* prose blocks (description, application…) */
+.sheet__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 26px 0; }
+.note-card { background: var(--black-2); border: 1px solid var(--line); border-radius: var(--rad); padding: 22px 24px; }
+.note-card h4 { font-size: 15px; color: var(--pink-2); margin-bottom: 10px; }
+.note-card p, .note-card li { font-size: 14.5px; color: var(--muted); }
+.note-card ul { padding-left: 18px; display: grid; gap: 6px; }
+.note-card li::marker { color: var(--pink); }
+
+/* tables */
+.tbl-block { margin: 30px 0; }
+.tbl-block > h3 {
+  font-size: 17px; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tbl-block > h3::before { content: ""; width: 18px; height: 2px; background: var(--grad); border-radius: 2px; flex: none; }
+.tbl-block > .tbl-sub { font-size: 13.5px; color: var(--muted-dark); margin-bottom: 14px; }
+.tbl-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--black-2); }
+.tbl-scroll::-webkit-scrollbar { height: 8px; }
+.tbl-scroll::-webkit-scrollbar-thumb { background: var(--black-3); border-radius: 8px; }
+
+table.ds { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+table.ds th, table.ds td { padding: 11px 16px; text-align: left; vertical-align: top; }
+table.ds thead th {
+  font-family: var(--font-head); font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid rgba(230, 0, 126, 0.4);
+  white-space: nowrap; background: var(--black-3);
+}
+table.ds tbody tr { border-bottom: 1px solid var(--line); }
+table.ds tbody tr:last-child { border-bottom: none; }
+table.ds tbody tr:hover { background: rgba(230, 0, 126, 0.05); }
+table.ds td.p { color: var(--white); font-weight: 500; }
+table.ds td.c, table.ds td.m { color: var(--muted); }
+table.ds td.v { font-family: var(--font-head); font-weight: 600; color: var(--pink-2); white-space: nowrap; }
+table.ds td.u { color: var(--muted-dark); white-space: nowrap; }
+table.ds td[rowspan] { border-right: 1px solid var(--line); }
+
+/* wide matrix tables (liner application advice) */
+table.ds.matrix { min-width: 880px; }
+table.ds.matrix thead th { position: sticky; top: 0; }
+table.ds.matrix th.stick, table.ds.matrix td.stick {
+  position: sticky; left: 0; background: var(--black-3); z-index: 2;
+  border-right: 1px solid var(--line); min-width: 200px;
+}
+table.ds.matrix td.stick { color: var(--white); font-weight: 500; }
+table.ds.matrix td { white-space: nowrap; }
+table.ds.matrix .grp td { background: rgba(230, 0, 126, 0.10); color: var(--pink-2); font-family: var(--font-head); font-weight: 600; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+table.ds.matrix .np { color: var(--muted-dark); font-style: italic; }
+
+/* footnotes / legal */
+.foot-notes { margin-top: 14px; }
+.foot-notes summary {
+  cursor: pointer; font-size: 13px; color: var(--muted-dark); font-weight: 500;
+  list-style: none; display: inline-flex; align-items: center; gap: 8px;
+}
+.foot-notes summary::-webkit-details-marker { display: none; }
+.foot-notes summary::before { content: "+"; color: var(--pink-2); font-weight: 700; transition: transform 0.3s; }
+.foot-notes[open] summary::before { transform: rotate(45deg); }
+.foot-notes p { font-size: 12.5px; color: var(--muted-dark); margin-top: 10px; line-height: 1.7; max-width: 920px; }
+
+/* contact line under a sheet */
+.sheet__contact { font-size: 13px; color: var(--muted-dark); margin-top: 22px; }
+.sheet__contact a { color: var(--pink-2); }
+
+/* bottom call-to-action */
+.ds-cta { margin: 80px 0 90px; text-align: center; }
+.ds-cta .card {
+  background: var(--black-2); border: 1px solid var(--line); border-radius: var(--rad);
+  padding: 48px 26px; max-width: 760px; margin-inline: auto;
+}
+.ds-cta h3 { font-size: clamp(22px, 3vw, 30px); margin-bottom: 10px; }
+.ds-cta p { color: var(--muted); margin-bottom: 24px; }
+
+@media (max-width: 640px) {
+  .ds-hero { padding-top: 120px; }
+  .sheet { padding-top: 44px; }
+  table.ds.matrix th.stick, table.ds.matrix td.stick { min-width: 150px; }
+}
+
+@media print {
+  body { background: #fff; color: #000; }
+  .nav, .ds-index, .ds-cta, footer, .progress { display: none !important; }
+  .tbl-scroll, .note-card, .fact { border-color: #ddd; background: #fff; }
+  table.ds td.v { color: #9b1260; }
+  table.ds thead th { background: #fff; color: #444; }
+  table.ds.matrix th.stick, table.ds.matrix td.stick { background: #fff; }
+  .sheet { page-break-inside: avoid; }
+}
