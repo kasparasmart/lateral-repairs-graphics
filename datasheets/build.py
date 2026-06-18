@@ -60,6 +60,7 @@ def css(slug):
     border: 1px solid #000; break-inside: avoid; }}
   table.blk td {{ border: 1px solid #000; padding: 3px 8px; vertical-align: top; }}
   td.sec {{ font-weight: bold; }}
+  table.product td {{ background: #f2f2f2; }}
   table.product td.k {{ font-weight: bold; }}
   td.k {{ width: 30%; }}
   table.blk.wide td.k {{ width: 30%; }}

@@ -51,23 +51,36 @@ def build_one(src, slug, main, suffix, variant):
     # erase the original baked title (right part of the grey bar)
     d.rectangle([588, BAR_TOP + 2, 1300, BAR_BOT - 2], fill=GREY)
 
-    # fonts sized so cap height matches the original (~54 px)
-    semi = _load_font("Montserrat-SemiBold.ttf", 76)
-    bold = _load_font("Montserrat-Bold.ttf", 76)
+    # title must sit right of the meta block (which ends ~x=480)
+    X_LEFT_LIMIT = 500
+    max_w = TITLE_X_RIGHT - X_LEFT_LIMIT
 
-    # build pieces right-to-left: main(SemiBold) + " " + suffix(Bold)[+ " "+variant(Bold)]
-    pieces = [(main + " ", semi), (suffix, bold)]
-    if variant:
-        pieces.append((" " + variant, bold))
+    def pieces_for(px):
+        semi = _load_font("Montserrat-SemiBold.ttf", px)
+        bold = _load_font("Montserrat-Bold.ttf", px)
+        ps = [(main + " ", semi), (suffix, bold)]
+        if variant:
+            ps.append((" " + variant, bold))
+        return ps
 
+    # auto-fit: start at the reference size (~54px caps) and shrink if too wide
+    size = 76
+    pieces = pieces_for(size)
     total = sum(_text_w(d, t, f) for t, f in pieces)
+    if total > max_w:
+        size = max(40, int(size * max_w / total))
+        pieces = pieces_for(size)
+        total = sum(_text_w(d, t, f) for t, f in pieces)
+
+    # vertical centring: align cap centre to the original title band centre
+    cap_bb = d.textbbox((0, 0), "M", font=pieces[0][1])
+    cap_top, cap_h = cap_bb[1], cap_bb[3] - cap_bb[1]
+    y_caps_top = TITLE_CY - cap_h // 2
+
     x = TITLE_X_RIGHT - total
-    # vertical: align cap tops to TITLE_Y0 (use ascent offset)
     for t, f in pieces:
-        # textbbox top offset to seat caps at TITLE_Y0
-        bb = d.textbbox((0, 0), t.strip() or "M", font=f)
-        y = TITLE_Y0 - bb[1]
-        d.text((x, y), t, font=f, fill=WHITE)
+        bb = d.textbbox((0, 0), "M", font=f)
+        d.text((x, y_caps_top - bb[1]), t, font=f, fill=WHITE)
         x += _text_w(d, t, f)
     im.save(os.path.join(BG_DIR, f"{slug}.png"))
     return im
