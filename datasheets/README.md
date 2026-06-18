@@ -1,12 +1,20 @@
 # Lateral Repairs — MULTIline Technical Data Sheets (2026)
 
-Redesigned A4 technical data sheets for the 2026 MULTIline liner range,
-styled to match the supplied reference (`assets/REFERENCE_FORCE_TDS.pdf`)
-using the Lateral Repairs 2026 logo and brand pink (`#E6007E`).
+A4 technical data sheets for the 2026 MULTIline liner range, built to match
+the supplied reference (`assets/REFERENCE_FORCE_TDS.pdf`) exactly:
 
-All values are taken **verbatim** from the source Word documents — only the
-layout/design was changed. An automated check confirms every product name,
-code, undersize and physical value from the Word files appears in each PDF.
+- **Letterhead** (logo, magenta "TECHNICAL DATA SHEET" block, grey title bar,
+  magenta contact footer, watermark) is reused **pixel-for-pixel** from the
+  reference PDF, so colours, logo and contact info are identical. Only the
+  per-product title in the grey bar is re-rendered (Montserrat, matching the
+  reference's font).
+- **Body** is set in Times New Roman (Liberation Serif), black values, bold
+  section headers — matching the reference.
+- **Page numbers** are white serif on the magenta footer ("Page X of Y").
+
+All values come **verbatim** from the source Word documents — only the layout
+was changed. An automated check confirms every product name, code, undersize
+and physical value from the Word files appears in each PDF.
 
 ## 2026 renaming
 
@@ -36,19 +44,23 @@ code, undersize and physical value from the Word files appears in each PDF.
 ```bash
 cd datasheets
 pip install python-docx weasyprint pypdf pillow
-python3 build.py      # regenerates all PDFs in out/
+python3 make_backgrounds.py   # builds per-product letterheads in assets/bg/
+python3 build.py              # renders all PDFs in out/
 ```
 
 - `parse_tds.py` — parses the Word-doc tables (`assets/source_tables.json`)
   into a clean per-product model. No values are altered.
-- `build.py` — renders each product to a branded A4 PDF with WeasyPrint
-  (repeating header/footer, page numbers, brand colours).
+- `make_backgrounds.py` — reuses `assets/letterhead.png` (extracted from the
+  reference PDF) and re-renders each product title with Montserrat
+  (`assets/fonts/`) into `assets/bg/<slug>.png`.
+- `build.py` — renders each product to PDF with WeasyPrint, using the
+  letterhead as a full-page background and a Times New Roman body.
 
 ## Notes
 
 - The Word documents contain product / material / supply / general data plus
-  physical properties and handling parameters. They do **not** contain the
-  page-3 inversion/curing-pressure table seen in the old FORCE reference PDF,
-  so that table is not reproduced (no source data for the new range).
-- Fonts fall back to DejaVu where Space Grotesk / Inter are unavailable; the
-  layout and colours are unaffected.
+  physical properties and handling parameters (two pages). They do **not**
+  contain the page-3 inversion/curing-pressure table from the old FORCE
+  reference, so that page is not reproduced (no source data for the new range).
+- Fonts: body uses Liberation Serif (metric-identical to Times New Roman);
+  titles use Montserrat (the reference's header font).
