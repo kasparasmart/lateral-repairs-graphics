@@ -70,20 +70,20 @@ def css():
   .sidebar {{ position:fixed; top:-11mm; left:-13mm; width:6mm; height:297mm; background:{CHAR}; }}
 
   h1.tds {{ font-weight:500; font-size:18pt; color:#3a3742; margin:0 0 5px; }}
-  .titlebar {{ background:#e7e5ea; padding:9px 15px; display:flex; align-items:center;
+  .titlebar {{ background:#e7e5ea; padding:7px 15px; display:flex; align-items:center;
     justify-content:space-between; margin-bottom:7px; }}
   .titlebar .t {{ font-weight:900; font-size:27pt; letter-spacing:-.5px; }}
   .titlebar .t .a {{ color:{CHAR}; }} .titlebar .t .b {{ color:{PINK}; }}
   .titlebar img {{ height:1.35cm; }}
-  .lede {{ font-size:9pt; color:#3a3742; margin:0 0 9px; }}
+  .lede {{ font-size:9pt; color:#3a3742; margin:0 0 6px; }}
 
   .cols {{ display:flex; gap:12px; }} .col {{ flex:1; }}
   table.f {{ width:100%; border-collapse:collapse; }}
   .hd {{ background:{PINK}; color:#fff; font-weight:700; font-size:10pt; text-align:center; padding:6px; }}
-  table.f td.k {{ background:{CHAR}; color:#fff; font-weight:600; width:46%; padding:5px 8px;
+  table.f td.k {{ background:{CHAR}; color:#fff; font-weight:600; width:46%; padding:3px 8px;
     border-bottom:2px solid #fff; vertical-align:middle; }}
   table.f td.k .ic {{ height:13px; width:13px; vertical-align:-2px; margin-right:6px; }}
-  table.f td.v {{ color:#1a1820; padding:5px 8px; border-bottom:2px solid #fff; vertical-align:middle;
+  table.f td.v {{ color:#1a1820; padding:3px 8px; border-bottom:2px solid #fff; vertical-align:middle;
     font-weight:500; }}
   table.f tr:nth-child(odd) td.v {{ background:{GREY1}; }}
   table.f tr:nth-child(even) td.v {{ background:{GREY2}; }}
@@ -94,7 +94,7 @@ def css():
   table.big th.sub {{ background:{CHAR}; color:#fff; font-weight:600; font-size:7.3pt;
     padding:5px 2px; border:2px solid #fff; line-height:1.15; }}
   table.big th.sub .ic {{ height:12px; width:12px; vertical-align:-2px; }}
-  table.big td {{ text-align:center; padding:4px 2px; border:2px solid #fff; font-size:7.8pt; }}
+  table.big td {{ text-align:center; padding:2.5px 2px; border:2px solid #fff; font-size:7.8pt; }}
   table.big tr:nth-child(odd) td {{ background:{GREY1}; }}
   table.big tr:nth-child(even) td {{ background:{GREY2}; }}
   table.big td.dim {{ font-weight:600; }}
@@ -158,9 +158,27 @@ def hget(p, needle, default=""):
     return default
 
 
+def addlen(p):
+    """Additional length % from the Word handling table (e.g. '5 %')."""
+    v = hget(p, "Additional", "")
+    return v.replace(" ", "") if v else ""
+
+
+def water(p):
+    t = phys(p, "Water penetration")
+    if not t:
+        return REQ
+    units = t[2].split("\n")
+    vals = t[3].split("\n")
+    if len(units) == len(vals) and len(vals) > 1:
+        return " / ".join(f"{v} {u}" for v, u in zip(vals, units))
+    return f"{t[3]} {t[2]}".strip()
+
+
 def build_rows(p):
     """Return list of dicts: dim, flat, bend, lbend, lelong, resin, inv, cure."""
     bend = hget(p, "bend", "Max. 45°" if "FORCE" in p["display"] else "Max. 90°")
+    al = addlen(p) or REQ          # additional length % (Word) — applies over full Ø range
     rows = []
     if p["slug"] in ("pro-40", "pro-45"):
         for r in PRO_ROWS:
@@ -171,8 +189,8 @@ def build_rows(p):
     elif p["slug"] == "flex":
         for r in FLEX_ROWS:
             d = r["dim"].replace(' pipe', '').replace('into', '→')
-            d = d.replace('(2")', '').replace('(2.8")', '').replace('(4")', '').replace('(5")', '')
-            d = d.replace('(6")', '').replace('(8")', '').replace('(9")', '').replace('(10")', '')
+            for q in ('(2")', '(2.8")', '(4")', '(5")', '(6")', '(8")', '(9")', '(10")'):
+                d = d.replace(q, '')
             d = " ".join(d.split())
             rows.append(dict(dim=d, flat=REQ, bend=bend, lbend=REQ,
                              lelong=f'{r["elong"]} cm/m', resin=REQ, inv=r["contact"], cure=REQ))
@@ -180,11 +198,11 @@ def build_rows(p):
         diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "")
         for dn in [x.strip().rstrip(".") for x in diam.split("\n")[0].split(",") if x.strip()]:
             rows.append(dict(dim=f"DN {dn}", flat=REQ, bend=bend, lbend=REQ,
-                             lelong=REQ, resin=REQ, inv=REQ, cure=REQ))
+                             lelong=al, resin=REQ, inv=REQ, cure=REQ))
     else:  # force, force-rf, force-uv : diameter range
         diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "").split("\n")[0]
         rows.append(dict(dim=diam, flat=REQ, bend=bend, lbend=REQ,
-                         lelong=REQ, resin=REQ, inv=REQ, cure=REQ))
+                         lelong=al, resin=REQ, inv=REQ, cure=REQ))
     return rows
 
 
@@ -222,12 +240,15 @@ def render(p):
     undersize = next((v for k, v in p["supply"] if "undersized" in k.lower()), "")
     gd = dict(p["general"])
 
+    al = addlen(p)
     prod_rows = [
         ("", "Product name", p["product_name"]),
+        ("", "Product code", p["product_code"]),
         ("length", "Length", length),
         ("diameter", "Diameter", diam),
         ("thickness", "Wall thickness", fmt_thickness(p)),
         ("undersize", "Liner undersized", undersize),
+        ("length", "Additional length", al or REQ),
         ("curing", "Heat resistance", hget(p, "Heat", REQ)),
         ("bend", "Negotiating bends", hget(p, "bend", REQ)),
     ]
@@ -238,6 +259,7 @@ def render(p):
         ("coating", "Coating", gd.get("Coating", "")),
         ("weight", "Coating weight", fmt_weight(p, "Weight of coating")),
         ("colour", "Colour / coating", f'{gd.get("Basic color","")} / {gd.get("Color coating","")}'),
+        ("resin", "Water penetration", water(p)),
         ("storage", "Storage", "Protected from light, dry"),
     ]
 
