@@ -1,0 +1,550 @@
+{
+ "force": {
+  "title": "LR MULTIline FORCE TDS (Mega 3.0mm)",
+  "rows": [
+   {
+    "dim": "DN 100",
+    "flat": "~140",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~ 1.15",
+    "inv": "0,35-0,40",
+    "d3": "-",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 125",
+    "flat": "~175",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~1.44",
+    "inv": "0,30-0,45",
+    "d3": "-",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 150",
+    "flat": "~212",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~1.72",
+    "inv": "0,30-0,50",
+    "d3": "-",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 200",
+    "flat": "~282",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.30",
+    "inv": "0,25-0,40",
+    "d3": "-",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 225",
+    "flat": "~318",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.60",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 250",
+    "flat": "~353",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.90",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 300",
+    "flat": "~424",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~3.21",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "8mm"
+   }
+  ],
+  "foot": "Additional length *per bend >45°"
+ },
+ "force-uv": {
+  "title": "LR MULTIline FORCE UV TDS (Mega UV)",
+  "rows": [
+   {
+    "dim": "DN 100",
+    "flat": "~140",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~ 1.15",
+    "inv": "0,35-0,40",
+    "d3": "-",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 125",
+    "flat": "~175",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~1.44",
+    "inv": "0,30-0,45",
+    "d3": "-",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 150",
+    "flat": "~212",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~1.72",
+    "inv": "0,30-0,50",
+    "d3": "-",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 200",
+    "flat": "~282",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.30",
+    "inv": "0,25-0,40",
+    "d3": "-",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 225",
+    "flat": "~318",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.60",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 250",
+    "flat": "~353",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.90",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 300",
+    "flat": "~424",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~3.21",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "7mm"
+   }
+  ],
+  "foot": "Additional length *per bend >45°   **Approx 4 % loss in length for every 25 % change in dimension"
+ },
+ "force-rf": {
+  "title": "LR MULTIline FORCE TDS (Mega 4.5mm)",
+  "rows": [
+   {
+    "dim": "DN 100",
+    "flat": "~140",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~1.60",
+    "inv": "0,35-0,40",
+    "d3": "-",
+    "roller": "11mm"
+   },
+   {
+    "dim": "DN 125",
+    "flat": "~175",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.00",
+    "inv": "0,30-0,45",
+    "d3": "-",
+    "roller": "11mm"
+   },
+   {
+    "dim": "DN 150",
+    "flat": "~212",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~2.41",
+    "inv": "0,30-0,50",
+    "d3": "-",
+    "roller": "11mm"
+   },
+   {
+    "dim": "DN 200",
+    "flat": "~282",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~3.21",
+    "inv": "0,25-0,40",
+    "d3": "-",
+    "roller": "11mm"
+   },
+   {
+    "dim": "DN 225",
+    "flat": "~318",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~3.61",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "11mm"
+   },
+   {
+    "dim": "DN 250",
+    "flat": "~353",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~4.01",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "11mm"
+   },
+   {
+    "dim": "DN 300",
+    "flat": "~424",
+    "bend": "2 x 45",
+    "lbend": "~3 cm",
+    "lpct": "-",
+    "resin": "~4.81",
+    "inv": "0,20-0,40",
+    "d3": "-",
+    "roller": "11mm"
+   }
+  ],
+  "foot": "Additional length *per bend >45°"
+ },
+ "core": {
+  "title": "LR MULTIline  CORE TDS (Polynex)",
+  "rows": [
+   {
+    "dim": "DN 70-100",
+    "flat": "~95",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.04",
+    "resin": "~0.94",
+    "inv": "0,50-0,60",
+    "d3": "0,60-0,75",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 100-150",
+    "flat": "~136",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.04",
+    "resin": "~1.25",
+    "inv": "0,40-0,55",
+    "d3": "0,45-0,60",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 150-200",
+    "flat": "~205",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.04",
+    "resin": "~1.90",
+    "inv": "0,35-0,45",
+    "d3": "0,40-0,50",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 200-250",
+    "flat": "~273",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.04",
+    "resin": "~2.60",
+    "inv": "0,30-0,35",
+    "d3": "0,30-0,40",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 250-300",
+    "flat": "~341",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.04",
+    "resin": "~3.10",
+    "inv": "0,25-0,35",
+    "d3": "0,30-0,40",
+    "roller": "8mm"
+   },
+   {
+    "dim": "DN 300-350",
+    "flat": "~408",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.04",
+    "resin": "~3.80",
+    "inv": "0,20-0,30",
+    "d3": "0,25-0,35",
+    "roller": "8mm"
+   }
+  ],
+  "foot": "Additional length *per bend >90°   **Approx 4 % loss in length for every 25 % change in dimension"
+ },
+ "flex": {
+  "title": "LR MULTIline FLEX TDS (DrainPlus)",
+  "rows": [
+   {
+    "dim": "DN 30-50",
+    "flat": "~42",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~0.32",
+    "inv": "0,55-0,70",
+    "d3": "0,75-0,95",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 50-70",
+    "flat": "~71",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~0.51",
+    "inv": "0,50-0,65",
+    "d3": "0,60-0,95",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 70-100",
+    "flat": "~100",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~0.73",
+    "inv": "0,50-0,60",
+    "d3": "0,55-0,90",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 100-150",
+    "flat": "~143",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.01",
+    "inv": "0,45-0,55",
+    "d3": "0,50-0,85",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 125-175",
+    "flat": "~178",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.24",
+    "inv": "0,40-0,50",
+    "d3": "0,45-0,70",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 150-200",
+    "flat": "~214",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.58",
+    "inv": "0,35-0,45",
+    "d3": "0,40-0,65",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 200-250",
+    "flat": "~285",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~2.08",
+    "inv": "0,30-0,40",
+    "d3": "0,35-0,55",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 225-275",
+    "flat": "~320",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~2.31",
+    "inv": "0,30-0,35",
+    "d3": "0,35-0,45",
+    "roller": "7mm"
+   },
+   {
+    "dim": "DN 250-300",
+    "flat": "~357",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~2.58",
+    "inv": "0,25-0,30",
+    "d3": "0,35-0,40",
+    "roller": "7mm"
+   }
+  ],
+  "foot": "Additional length *per bend >45°   **Approx 5 % loss in length for every 25 % change in dimension"
+ },
+ "pro-40": {
+  "title": "LR MULTIline  PRO 4.0 mm TDS (Nanotech HD)",
+  "rows": [
+   {
+    "dim": "DN 70-100",
+    "flat": "~95",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~0.82",
+    "inv": "0,50-0,60",
+    "d3": "0,60-0,75",
+    "roller": "9mm"
+   },
+   {
+    "dim": "DN 100-150",
+    "flat": "~136",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.15",
+    "inv": "0,40-0,55",
+    "d3": "0,45-0,60",
+    "roller": "9mm"
+   },
+   {
+    "dim": "DN 150-200",
+    "flat": "~205",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.70",
+    "inv": "0,35-0,45",
+    "d3": "0,40-0,50",
+    "roller": "9mm"
+   },
+   {
+    "dim": "DN 200-250",
+    "flat": "~273",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~2.45",
+    "inv": "0,30-0,35",
+    "d3": "0,30-0,40",
+    "roller": "9mm"
+   },
+   {
+    "dim": "DN 250-300",
+    "flat": "~341",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~2.99",
+    "inv": "0,25-0,35",
+    "d3": "0,30-0,40",
+    "roller": "9mm"
+   }
+  ],
+  "foot": "Additional length *per bend >45°   **Approx 5 % loss in length for every 25 % change in dimension"
+ },
+ "pro-45": {
+  "title": "LR MULTIline  PRO 5.5 mm TDS (Nanotech 5.5)",
+  "rows": [
+   {
+    "dim": "DN 70-100",
+    "flat": "~95",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~0.95",
+    "inv": "0,55-0,65",
+    "d3": "0,60-0,75",
+    "roller": "12mm"
+   },
+   {
+    "dim": "DN 100-150",
+    "flat": "~136",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.32",
+    "inv": "0,40-0,60",
+    "d3": "0,40-0,65",
+    "roller": "12mm"
+   },
+   {
+    "dim": "DN 150-200",
+    "flat": "~205",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~1.88",
+    "inv": "0,40-0,50",
+    "d3": "0,40-0,55",
+    "roller": "12mm"
+   },
+   {
+    "dim": "DN 200-250",
+    "flat": "~273",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~2.65",
+    "inv": "0,30-0,40",
+    "d3": "0,30-0,45",
+    "roller": "12mm"
+   },
+   {
+    "dim": "DN 250-300",
+    "flat": "~341",
+    "bend": "90°",
+    "lbend": "5 cm",
+    "lpct": "0.05",
+    "resin": "~3.25",
+    "inv": "0,25-0,35",
+    "d3": "0,35-0,45",
+    "roller": "12mm"
+   }
+  ],
+  "foot": "Additional length *per bend >45°   **Approx 5 % loss in length for every 25 % change in dimension"
+ }
+}

@@ -44,6 +44,23 @@ RAL = os.path.join(ASSETS, "fonts_raleway")
 
 PRO_ROWS = json.load(open(os.path.join(ASSETS, "pro_table.json"), encoding="utf-8"))
 FLEX_ROWS = json.load(open(os.path.join(ASSETS, "flex_table.json"), encoding="utf-8"))
+EXCEL = json.load(open(os.path.join(ASSETS, "excel_data.json"), encoding="utf-8"))
+
+
+def dash(v):
+    v = str(v).strip()
+    return "–" if v in ("", "-", "None") else v
+
+
+def pct(v):
+    """L+** column: 0.04 -> '4 %', '-' -> en dash."""
+    v = str(v).strip()
+    if v in ("", "-", "None"):
+        return "–"
+    try:
+        return f"{round(float(v) * 100)} %"
+    except ValueError:
+        return v
 
 SUBTITLE = {
     "MULTIline PRO": "Hose liner for the trenchless inner lining of defective, leaking and statically impaired pipes.",
@@ -99,6 +116,7 @@ def css():
   table.big tr:nth-child(even) td {{ background:{GREY2}; }}
   table.big td.dim {{ font-weight:600; }}
   .req {{ color:#8a8690; font-style:italic; }}
+  .bigfoot {{ margin:4px 0 0; font-size:7pt; color:#777; }}
 
   .lower {{ display:flex; gap:14px; margin-top:11px; }}
   .qr {{ width:42%; border:1px solid #dcdae0; border-radius:8px; padding:9px 12px; }}
@@ -175,43 +193,17 @@ def water(p):
     return f"{t[3]} {t[2]}".strip()
 
 
-def build_rows(p):
-    """Return list of dicts: dim, flat, bend, lbend, lelong, resin, inv, cure."""
-    bend = hget(p, "bend", "Max. 45°" if "FORCE" in p["display"] else "Max. 90°")
-    al = addlen(p) or REQ          # additional length % (Word) — applies over full Ø range
-    rows = []
-    if p["slug"] in ("pro-40", "pro-45"):
-        for r in PRO_ROWS:
-            ln = r["liner"].split("/")[0].strip()
-            pi = r["pipe"].split("/")[0].strip()
-            rows.append(dict(dim=f"DN {ln} → {pi}", flat=REQ, bend=bend, lbend=REQ,
-                             lelong=f'{r["elong"]} cm/m', resin=REQ, inv=r["inv"], cure=r["cure"]))
-    elif p["slug"] == "flex":
-        for r in FLEX_ROWS:
-            d = r["dim"].replace(' pipe', '').replace('into', '→')
-            for q in ('(2")', '(2.8")', '(4")', '(5")', '(6")', '(8")', '(9")', '(10")'):
-                d = d.replace(q, '')
-            d = " ".join(d.split())
-            rows.append(dict(dim=d, flat=REQ, bend=bend, lbend=REQ,
-                             lelong=f'{r["elong"]} cm/m', resin=REQ, inv=r["contact"], cure=REQ))
-    elif p["slug"] == "core":
-        diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "")
-        for dn in [x.strip().rstrip(".") for x in diam.split("\n")[0].split(",") if x.strip()]:
-            rows.append(dict(dim=f"DN {dn}", flat=REQ, bend=bend, lbend=REQ,
-                             lelong=al, resin=REQ, inv=REQ, cure=REQ))
-    else:  # force, force-rf, force-uv : diameter range
-        diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "").split("\n")[0]
-        rows.append(dict(dim=diam, flat=REQ, bend=bend, lbend=REQ,
-                         lelong=al, resin=REQ, inv=REQ, cure=REQ))
-    return rows
-
-
-def big_table(rows):
+def big_table(p):
+    block = EXCEL.get(p["slug"], {"rows": [], "foot": ""})
     body = ""
-    for r in rows:
-        body += (f'<tr><td class="dim">{r["dim"]}</td><td>{r["flat"]}</td><td>{r["bend"]}</td>'
-                 f'<td>{r["lbend"]}</td><td>{r["lelong"]}</td><td>{r["resin"]}</td>'
-                 f'<td>{r["inv"]}</td><td>{r["cure"]}</td></tr>')
+    for r in block["rows"]:
+        body += (f'<tr><td class="dim">{dash(r["dim"])}</td>'
+                 f'<td>{dash(r["flat"])}</td><td>{dash(r["bend"])}</td>'
+                 f'<td>{dash(r["lbend"])}</td><td>{pct(r["lpct"])}</td>'
+                 f'<td>{dash(r["resin"])}</td><td>{dash(r["inv"])}</td>'
+                 f'<td>{dash(r["d3"])}</td><td>{dash(r["roller"])}</td></tr>')
+    foot = block.get("foot", "")
+    foot_html = f'<p class="bigfoot">{foot}</p>' if foot else ""
     return f"""
   <table class="big">
     <tr>
@@ -219,36 +211,45 @@ def big_table(rows):
       <th class="grp" colspan="2">Length</th>
       <th class="grp">Resin</th>
       <th class="grp" colspan="2">Pressure</th>
+      <th class="grp">Roller</th>
     </tr>
     <tr>
       <th class="sub">Dimension</th>
-      <th class="sub">Flat (cm)</th>
+      <th class="sub">Flat (mm)</th>
       <th class="sub">{ic('bend')} Bend</th>
-      <th class="sub">{ic('bend')} L + bend (cm)</th>
-      <th class="sub">{ic('liner')} L + length</th>
+      <th class="sub">{ic('bend')} L + * (cm)</th>
+      <th class="sub">{ic('liner')} L + ** (%)</th>
       <th class="sub">{ic('resin')} kg / m</th>
       <th class="sub">Inversion (bar)</th>
-      <th class="sub">Curing (bar)</th>
+      <th class="sub">3D (bar)</th>
+      <th class="sub">Roller gap</th>
     </tr>
     {body}
-  </table>"""
+  </table>{foot_html}"""
 
 
 def render(p):
+    p = dict(p)
+    thickness = fmt_thickness(p)
+    # the current PRO range is 4.0 mm and 5.5 mm; the 4.5 mm sheet is updated to
+    # 5.5 mm to match the manufacturer's Liners_TDS data.
+    if p["slug"] == "pro-45":
+        p["variant"] = "5.5 mm"
+        p["product_name"] = p["product_name"].replace("4.5 mm", "5.5 mm").replace("4,5", "5,5")
+        thickness = "5,50 mm / 0,22 inch"
+
     diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "").split("\n")[0]
     length = next((v for k, v in p["supply"] if k == "Liner lengths"), "").split("\n")[0]
     undersize = next((v for k, v in p["supply"] if "undersized" in k.lower()), "")
     gd = dict(p["general"])
 
-    al = addlen(p)
     prod_rows = [
         ("", "Product name", p["product_name"]),
         ("", "Product code", p["product_code"]),
         ("length", "Length", length),
         ("diameter", "Diameter", diam),
-        ("thickness", "Wall thickness", fmt_thickness(p)),
+        ("thickness", "Wall thickness", thickness),
         ("undersize", "Liner undersized", undersize),
-        ("length", "Additional length", al or REQ),
         ("curing", "Heat resistance", hget(p, "Heat", REQ)),
         ("bend", "Negotiating bends", hget(p, "bend", REQ)),
     ]
@@ -283,7 +284,7 @@ def render(p):
     <div class="col">{feature_table("Product features", prod_rows)}</div>
     <div class="col">{feature_table("Material features", mat_rows)}</div>
   </div>
-  {big_table(build_rows(p))}
+  {big_table(p)}
   <div class="lower">
     <div class="qr">
       <h4>Resin quantity</h4>
@@ -306,12 +307,27 @@ def render(p):
 
 
 def main():
+    from pypdf import PdfWriter
+    files = []
     for p in load_all():
+        variant = "5.5 mm" if p["slug"] == "pro-45" else p["variant"]
         name = "LR_" + p["display"].replace(" ", "_")
-        if p["variant"]:
-            name += "_" + p["variant"].replace(" ", "").replace(".", "")
-        HTML(string=render(p), base_url=HERE).write_pdf(os.path.join(OUT, name + ".pdf"))
+        if variant:
+            name += "_" + variant.replace(" ", "").replace(".", "")
+        path = os.path.join(OUT, name + ".pdf")
+        HTML(string=render(p), base_url=HERE).write_pdf(path)
+        files.append(path)
         print("wrote", name + ".pdf")
+
+    order = ["PRO_40mm", "PRO_55mm", "FLEX", "CORE", "FORCE", "FORCE_RF", "FORCE_UV"]
+    files.sort(key=lambda f: next((i for i, k in enumerate(order) if k in f), 99))
+    w = PdfWriter()
+    for f in files:
+        w.append(f)
+    combined = os.path.join(OUT, "LR_MULTIline_ALL_datasheets.pdf")
+    with open(combined, "wb") as fh:
+        w.write(fh)
+    print("wrote", os.path.basename(combined), f"({len(files)} sheets)")
 
 
 if __name__ == "__main__":
