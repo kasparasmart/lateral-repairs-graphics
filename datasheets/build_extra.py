@@ -11,6 +11,8 @@ HERE = os.path.dirname(__file__)
 OUT = os.path.join(HERE, "out_ims")
 os.makedirs(OUT, exist_ok=True)
 
+CONN_DIAGRAM = "data:image/png;base64," + B.b64(os.path.join(HERE, "assets", "conn_diagram.png"))
+
 EXTRA_CSS = f"""
 <style>
   table.f td.k2 {{ background:{B.CHAR}; color:#fff; font-weight:600; width:38%;
@@ -31,7 +33,13 @@ EXTRA_CSS = f"""
   .card h4 {{ margin:0 0 4px; font-size:9.5pt; color:{B.CHAR}; }}
   .card p {{ margin:0 0 4px; font-size:8pt; color:#444; line-height:1.45; }}
   .twocard {{ display:flex; gap:14px; }} .twocard .card {{ flex:1; }}
-  .desc {{ font-size:8.5pt; color:#3a3742; line-height:1.5; margin:0 0 4px; }}
+  .desc {{ font-size:9.5pt; color:#3a3742; line-height:1.6; margin:0 0 10px; }}
+  .secttl {{ background:{B.PINK}; color:#fff; font-weight:700; font-size:11pt;
+    text-align:center; padding:7px; margin:14px 0 0; }}
+  .illus {{ text-align:center; margin:18px 0 6px; }}
+  .illus img {{ max-width:74%; max-height:8.2cm; }}
+  .illus figcaption {{ margin-top:8px; font-size:8.5pt; color:#777; }}
+  .pagebreak {{ break-before:page; }}
 </style>"""
 
 
@@ -132,14 +140,29 @@ def conn_table(title, seam):
 
 def connection():
     body = B.css() + EXTRA_CSS
+    # ---- page 1: product description + illustration ----
     body += head("Connection ", "Liners",
                  "Flexible polyester knitted hose with thermoplastic coating for the rehabilitation of lateral connections.")
     body += """
-  <p class="desc">Lateral Repairs Connection Liner is a flexible, versatile solution for the rehabilitation of non-pressure pipelines, designed to restore lateral connections with precision and reliability. Manufactured from a durable polyester knitted hose with a thermoplastic coating, it is available in sizes ranging from DN50 to DN300, with 45°, 90° and 180° connection options. Custom sizes can be supplied in consultation with Lateral Repairs.</p>
-  <div style="display:flex;gap:14px;margin-top:6px">
-    <div style="flex:1">""" + conn_table("Stitched &amp; Sealed Connection Liners", "Stitched and sealed") + """</div>
-    <div style="flex:1">""" + conn_table("Stitched (Not Sealed) Connection Liners", "Stitched") + """</div>
-  </div>"""
+  <div class="secttl">Product description</div>
+  <div class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0">
+    <p class="desc">Lateral Repairs Connection Liner is a flexible and versatile solution for the rehabilitation of non-pressure pipelines, designed to restore lateral connections with precision and reliability. Manufactured from a durable polyester knitted hose with a thermoplastic coating, it is available in sizes ranging from DN50 to DN300, with 45°, 90° and 180° connection options.</p>
+    <p class="desc">This proven system is engineered to adapt to a wide range of installation conditions, providing contractors with a dependable solution for junction rehabilitation. For projects requiring unique specifications, custom sizes can also be supplied in consultation with Lateral Repairs.</p>
+    <p class="desc">Lateral Repairs Connection Liners combine strength, adaptability and ease of use, making them a trusted solution for extending the service life of pipeline infrastructure.</p>
+  </div>
+  <figure class="illus">
+    <img src="%s" alt="Lateral Repairs connection liner">
+    <figcaption>Lateral Repairs Connection Liner — restores lateral / branch connections (45°, 90°, 180°).</figcaption>
+  </figure>
+  <!-- ---- page 2: technical data ---- -->
+  <div class="pagebreak"></div>
+  <div class="secttl">Technical data</div>
+  <div style="display:flex;gap:14px;margin-top:11px">
+    <div style="flex:1">%s</div>
+    <div style="flex:1">%s</div>
+  </div>""" % (CONN_DIAGRAM,
+              conn_table("Stitched &amp; Sealed Connection Liners", "Stitched and sealed"),
+              conn_table("Stitched (Not Sealed) Connection Liners", "Stitched"))
     body += footer([
         "The final quality depends on the resin system used, the inversion pressure and the curing pressure. We advise against the use of other resin systems or higher pressures and accept no liability.",
         "All data are guideline values determined under laboratory conditions and can differ on industrial job sites.",
