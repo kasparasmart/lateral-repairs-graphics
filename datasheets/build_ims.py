@@ -78,19 +78,22 @@ def css():
   @font-face {{ font-family:'Ral'; src:url('file://{RAL}/Raleway-SemiBold.ttf'); font-weight:600; }}
   @font-face {{ font-family:'Ral'; src:url('file://{RAL}/Raleway-Bold.ttf'); font-weight:700; }}
   @font-face {{ font-family:'Ral'; src:url('file://{RAL}/Raleway-Black.ttf'); font-weight:900; }}
-  @page {{ size:A4; margin:11mm 10mm 15mm 13mm;
+  @page {{ size:A4; margin:11mm 10mm 18mm 13mm;
     @bottom-right {{ content:"Page " counter(page) " of " counter(pages);
-      font-family:'Ral'; font-size:6.5pt; color:#aaa; margin-bottom:11mm; }} }}
+      font-family:'Ral'; font-size:6.5pt; color:#aaa; margin-bottom:14mm; }} }}
   * {{ box-sizing:border-box; }}
   html {{ font-family:'Ral',sans-serif; color:#1a1820; font-size:8.5pt; }}
   body {{ margin:0; }}
   .sidebar {{ position:fixed; top:-11mm; left:-13mm; width:6mm; height:297mm; background:{CHAR}; }}
-  .contactbar {{ position:fixed; bottom:-15mm; left:-13mm; width:210mm; height:10mm;
+  .contactbar {{ position:fixed; bottom:-18mm; left:-13mm; width:210mm; height:13mm;
     background:{PINK}; }}
-  .contactbar .crow {{ display:table; width:100%; height:10mm; }}
+  .contactbar .crow {{ display:table; width:100%; height:13mm; }}
   .contactbar .ci {{ display:table-cell; vertical-align:middle; text-align:center;
-    color:#fff; font-size:7pt; font-weight:500; }}
-  .contactbar .ci .cic {{ height:11px; width:11px; vertical-align:-2px; margin-right:4px; }}
+    color:#fff; font-size:8.5pt; font-weight:500; }}
+  .contactbar .ci .badge {{ display:inline-block; width:22px; height:22px;
+    border:1.6px solid #fff; border-radius:50%; text-align:center; line-height:21px;
+    margin-right:7px; vertical-align:middle; }}
+  .contactbar .ci .badge .cic {{ height:12px; width:12px; vertical-align:middle; }}
 
   h1.tds {{ font-weight:500; font-size:18pt; color:#3a3742; margin:0 0 5px; }}
   .titlebar {{ background:#e7e5ea; padding:7px 15px; display:flex; align-items:center;
@@ -157,12 +160,14 @@ CONTACT = {
 
 
 def contactbar():
+    def item(icon, text):
+        return f'<span class="ci"><span class="badge">{CONTACT[icon]}</span>{text}</span>'
     return f"""
   <div class="contactbar"><div class="crow">
-    <span class="ci">{CONTACT['globe']} www.lateralrepairs.com</span>
-    <span class="ci">{CONTACT['mail']} info@lateralrepairs.com</span>
-    <span class="ci">{CONTACT['phone']} +370 698 76 581</span>
-    <span class="ci">{CONTACT['pin']} Paberžių g. 5, Tauragė, Lithuania, LT-72328</span>
+    {item('globe', 'www.lateralrepairs.com')}
+    {item('mail', 'info@lateralrepairs.com')}
+    {item('phone', '+370 698 76 581')}
+    {item('pin', 'Paberžių g. 5, Tauragė, Lithuania, LT-72328')}
   </div></div>"""
 
 
@@ -244,8 +249,8 @@ def big_table(p):
       <th class="sub">Dimension</th>
       <th class="sub">Flat (mm)</th>
       <th class="sub">{ic('bend')} Bend</th>
-      <th class="sub">{ic('bend')} L + * (cm)</th>
-      <th class="sub">{ic('liner')} L + ** (%)</th>
+      <th class="sub">L + {ic('bend')} *</th>
+      <th class="sub">L + {ic('liner')} **</th>
       <th class="sub">{ic('resin')} kg / m</th>
       <th class="sub">Inversion (bar)</th>
       <th class="sub">3D (bar)</th>
@@ -258,12 +263,14 @@ def big_table(p):
 def render(p):
     p = dict(p)
     thickness = fmt_thickness(p)
+    textile_weight = fmt_weight(p, "Weight")
     # the current PRO range is 4.0 mm and 5.5 mm; the 4.5 mm sheet is updated to
     # 5.5 mm to match the manufacturer's Liners_TDS data.
     if p["slug"] == "pro-45":
         p["variant"] = "5.5 mm"
         p["product_name"] = p["product_name"].replace("4.5 mm", "5.5 mm").replace("4,5", "5,5")
         thickness = "5,50 mm / 0,22 inch"
+        textile_weight = "800* g/m²"
 
     diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "").split("\n")[0]
     length = next((v for k, v in p["supply"] if k == "Liner lengths"), "").split("\n")[0]
@@ -283,7 +290,7 @@ def render(p):
     mat_rows = [
         ("material", "Material", p["material"]),
         ("textile", "Textile", gd.get("Type of fibers", "")),
-        ("weight", "Textile weight", fmt_weight(p, "Weight")),
+        ("weight", "Textile weight", textile_weight),
         ("coating", "Coating", gd.get("Coating", "")),
         ("weight", "Coating weight", fmt_weight(p, "Weight of coating")),
         ("colour", "Colour / coating", f'{gd.get("Basic color","")} / {gd.get("Color coating","")}'),
