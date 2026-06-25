@@ -83,15 +83,14 @@ def feature_table2(title, rows):
 def glassfiber():
     rows = [
         ("material", "Glass composition", "E-CR Glass"),
-        ("weight", "Weight per unit area", "1075 g/m² ± 8 % <span style='color:#777'>(deviation from nominal)</span>"),
+        ("weight", "Weight per unit area", "1050 g/m² ± 8 % <span style='color:#777'>(deviation from nominal)</span>"),
         ("textile", "1st layer — Chopped Strand Mat", "500 g/m²"),
         ("textile", "2nd layer — Woven Roving", "Warp 0°: 150 g/m² &nbsp;·&nbsp; Weft 90°: 410 g/m²"),
         ("coating", "Bonding", "Stitching"),
         ("material", "Sewing thread (polyester)", "≤ 15 g/m²"),
         ("resin", "Moisture content", "&lt; 0.15 %"),
         ("thickness", "Edges", "Trimmed"),
-        ("length", "Width", "Variable ± 1.5 cm"),
-        ("coating", "Type of size", "Suitable for UP-, VE- and EP- resins"),
+        ("length", "Width", "125 cm / 250 cm"),
         ("colour", "Coupling agent", "Silane"),
         ("diameter", "Tube diameter, internal", "70 mm"),
     ]
