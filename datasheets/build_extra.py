@@ -168,9 +168,64 @@ def connection():
     return body
 
 
+# --------------------------------------------------------------- End Cap Glue
+def endcap():
+    tech = [
+        ("curing", "Application temperature", "+10 °C – +40 °C"),
+        ("storage", "Using temperature", "min. +5 °C"),
+        ("curing", "Temperature resistance", "−40 °C – +75 °C *"),
+        ("resin", "Curing time", "5 – 15 min (depending on conditions)"),
+        ("length", "Open time", "10 – 40 min"),
+        ("weight", "Density", "0,83 g/ml"),
+        ("coating", "Dosage", "approx. 4 m² / l"),
+        ("colour", "Colour", "Yellowish"),
+        ("storage", "Storage stability", "12 months · +5 – +25 °C, dry"),
+    ]
+    handling = [
+        ("material", "Phase", "Slightly yellowish liquid synthetic rubber solution"),
+        ("coating", "Tools", "Brush, roller or spray gun"),
+        ("weight", "Packaging", "Steel cans · 1, 3, 10, 20, 200, 1000 L"),
+        ("resin", "Cleaning", "Acetone (product and tools)"),
+        ("undersize", "Environment", "Hazardous-waste disposal; cans recyclable"),
+        ("curing", "Fire", "Highly flammable"),
+        ("diameter", "Transport", "ADR UN 1133, class 3.1"),
+        ("certificate", "Safety", "Harmful — read the SDS before use"),
+    ]
+    body = B.css() + EXTRA_CSS
+    body += head("End Cap ", "Glue",
+                 "A solvent-borne, toluene-free, nearly n-hexane-free special contact adhesive for industrial and professional use.")
+    body += """
+  <div class="card" style="margin-top:0">
+    <h4>Suitability</h4>
+    <p class="desc" style="margin:0">Flooring, shoe and leather industry, ship, boat and car-chassis building. Very well suited for joining rubber, leather, gasket, floor and wall coverings, sheets, mouldings, metals, woodpiles and different linings and insulations.</p>
+  </div>
+  <div class="cols" style="margin-top:11px">
+    <div class="col">""" + feature_table2("Technical data", tech) + """</div>
+    <div class="col">""" + feature_table2("Handling &amp; safety", handling) + """</div>
+  </div>
+  <div class="card">
+    <h4>Operating directions</h4>
+    <p>Surfaces must be clean, dry and free from grease and dust; they can be coarse-ground. Apply the adhesive in a thin, smooth layer to both surfaces with a brush or roller — for spray-gun systems it can be diluted with acetone 5–20 %. Let the glue dry 15–40 minutes depending on conditions, then press the surfaces tightly together, checking there are no air bubbles. Over-dried surfaces can be reactivated with heat; if heated, press together while still warm. The bond holds immediately, with full strength developing in about two days. The dried adhesive is freeze-resistant.</p>
+    <p style="margin-top:4px">* Heat resistance of the dry seam approx. +75 °C without hardener; with LR1600 hardener (3–10 %), approx. 80–90 °C.</p>
+  </div>"""
+    body += f"""
+  <div class="notice" style="margin-top:11px">
+    <h4>Notice</h4>
+    <ul>
+      <li>Contains hydroactive solvents 15–50 %, ethyl acetate 15–50 %. Highly flammable — store in well-closed cans in a cool, well-ventilated place; the directions for storing and transporting flammable liquids apply.</li>
+      <li>Harmful. The product health &amp; safety data sheet (SDS) must be read before use.</li>
+      <li>The information in this data sheet corresponds to our knowledge and experience at present and is non-binding; check the product's suitability for your application before use.</li>
+    </ul>
+  </div>
+  <div class="foot"><div>Issue: V2026.1 · 2026.06</div></div>
+  {B.contactbar()}"""
+    return body
+
+
 def main():
     jobs = [("LR_Glassfiber_Complex_1080.pdf", glassfiber()),
-            ("LR_Connection_Liners.pdf", connection())]
+            ("LR_Connection_Liners.pdf", connection()),
+            ("LR_End_Cap_Glue.pdf", endcap())]
     for name, html in jobs:
         HTML(string=html, base_url=HERE).write_pdf(os.path.join(OUT, name))
         print("wrote", name)
