@@ -36,9 +36,9 @@ EXTRA_CSS = f"""
   .desc {{ font-size:9.5pt; color:#3a3742; line-height:1.6; margin:0 0 10px; }}
   .secttl {{ background:{B.PINK}; color:#fff; font-weight:700; font-size:11pt;
     text-align:center; padding:7px; margin:14px 0 0; }}
-  .illus {{ text-align:center; margin:18px 0 6px; }}
-  .illus img {{ max-width:74%; max-height:8.2cm; }}
-  .illus figcaption {{ margin-top:8px; font-size:8.5pt; color:#777; }}
+  .illus {{ text-align:center; margin:26px 0 6px; }}
+  .illus img {{ max-width:90%; max-height:13cm; }}
+  .illus figcaption {{ margin-top:12px; font-size:9pt; color:#777; }}
   .pagebreak {{ break-before:page; }}
 </style>"""
 
