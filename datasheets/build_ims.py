@@ -38,6 +38,8 @@ def b64(p):
 
 
 DROP = "data:image/png;base64," + b64(os.path.join(ASSETS, "drop.png"))
+LEN_BEND = "data:image/png;base64," + b64(os.path.join(ASSETS, "len_bend.png"))
+LEN_LINER = "data:image/png;base64," + b64(os.path.join(ASSETS, "len_liner.png"))
 QR_IOS = "data:image/png;base64," + b64(os.path.join(ASSETS, "qr", "resincalc-ios.png"))
 QR_AND = "data:image/png;base64," + b64(os.path.join(ASSETS, "qr", "resincalc-android.png"))
 RAL = os.path.join(ASSETS, "fonts_raleway")
@@ -120,6 +122,7 @@ def css():
   table.big th.sub {{ background:{CHAR}; color:#fff; font-weight:600; font-size:7.3pt;
     padding:5px 2px; border:2px solid #fff; line-height:1.15; }}
   table.big th.sub .ic {{ height:12px; width:12px; vertical-align:-2px; }}
+  table.big th.sub .licon {{ height:15px; vertical-align:middle; margin:0 2px; }}
   table.big td {{ text-align:center; padding:2.5px 2px; border:2px solid #fff; font-size:7.8pt; }}
   table.big tr:nth-child(odd) td {{ background:{GREY1}; }}
   table.big tr:nth-child(even) td {{ background:{GREY2}; }}
@@ -249,8 +252,8 @@ def big_table(p):
       <th class="sub">Dimension</th>
       <th class="sub">Flat (mm)</th>
       <th class="sub">{ic('bend')} Bend</th>
-      <th class="sub">L + {ic('bend')} *</th>
-      <th class="sub">L + {ic('liner')} **</th>
+      <th class="sub">L + <img class="licon" src="{LEN_BEND}"> *</th>
+      <th class="sub">L + <img class="licon" src="{LEN_LINER}"> **</th>
       <th class="sub">{ic('resin')} kg / m</th>
       <th class="sub">Inversion (bar)</th>
       <th class="sub">3D (bar)</th>
