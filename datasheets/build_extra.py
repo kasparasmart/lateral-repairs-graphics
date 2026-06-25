@@ -68,10 +68,8 @@ def footer(extra_notes):
     </div>
     <div class="notice"><h4>Notice</h4><ul>{notes}</ul></div>
   </div>
-  <div class="foot">
-    <div>For further information visit <a href="https://www.lateralrepairs.com">www.lateralrepairs.com</a> · info@lateralrepairs.com</div>
-    <div>Issue: V2026.1 · 2026.06</div>
-  </div>"""
+  <div class="foot"><div>Issue: V2026.1 · 2026.06</div></div>
+  {B.contactbar()}"""
 
 
 def feature_table2(title, rows):

@@ -78,13 +78,19 @@ def css():
   @font-face {{ font-family:'Ral'; src:url('file://{RAL}/Raleway-SemiBold.ttf'); font-weight:600; }}
   @font-face {{ font-family:'Ral'; src:url('file://{RAL}/Raleway-Bold.ttf'); font-weight:700; }}
   @font-face {{ font-family:'Ral'; src:url('file://{RAL}/Raleway-Black.ttf'); font-weight:900; }}
-  @page {{ size:A4; margin:11mm 10mm 10mm 13mm;
+  @page {{ size:A4; margin:11mm 10mm 15mm 13mm;
     @bottom-right {{ content:"Page " counter(page) " of " counter(pages);
-      font-family:'Ral'; font-size:7pt; color:#999; }} }}
+      font-family:'Ral'; font-size:6.5pt; color:#aaa; margin-bottom:11mm; }} }}
   * {{ box-sizing:border-box; }}
   html {{ font-family:'Ral',sans-serif; color:#1a1820; font-size:8.5pt; }}
   body {{ margin:0; }}
   .sidebar {{ position:fixed; top:-11mm; left:-13mm; width:6mm; height:297mm; background:{CHAR}; }}
+  .contactbar {{ position:fixed; bottom:-15mm; left:-13mm; width:210mm; height:10mm;
+    background:{PINK}; }}
+  .contactbar .crow {{ display:table; width:100%; height:10mm; }}
+  .contactbar .ci {{ display:table-cell; vertical-align:middle; text-align:center;
+    color:#fff; font-size:7pt; font-weight:500; }}
+  .contactbar .ci .cic {{ height:11px; width:11px; vertical-align:-2px; margin-right:4px; }}
 
   h1.tds {{ font-weight:500; font-size:18pt; color:#3a3742; margin:0 0 5px; }}
   .titlebar {{ background:#e7e5ea; padding:7px 15px; display:flex; align-items:center;
@@ -137,6 +143,27 @@ def css():
 
 def ic(name):
     return ICONS.get(name, "")
+
+
+_CW = ('<svg class="cic" viewBox="0 0 24 24" fill="none" stroke="#fff" '
+       'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{}</svg>')
+CONTACT = {
+    "globe": _CW.format('<circle cx="12" cy="12" r="9"/>'
+                        '<path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/>'),
+    "mail": _CW.format('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
+    "phone": _CW.format('<path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>'),
+    "pin": _CW.format('<path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>'),
+}
+
+
+def contactbar():
+    return f"""
+  <div class="contactbar"><div class="crow">
+    <span class="ci">{CONTACT['globe']} www.lateralrepairs.com</span>
+    <span class="ci">{CONTACT['mail']} info@lateralrepairs.com</span>
+    <span class="ci">{CONTACT['phone']} +370 698 76 581</span>
+    <span class="ci">{CONTACT['pin']} Paberžių g. 5, Tauragė, Lithuania, LT-72328</span>
+  </div></div>"""
 
 
 def phys(p, key):
@@ -299,10 +326,8 @@ def render(p):
       <ul>{''.join(f'<li>{n}</li>' for n in notes)}</ul>
     </div>
   </div>
-  <div class="foot">
-    <div>For further information visit <a href="https://www.lateralrepairs.com">www.lateralrepairs.com</a> · info@lateralrepairs.com</div>
-    <div>Issue: V2026.1 · 2026.06</div>
-  </div>
+  <div class="foot"><div>Issue: V2026.1 · 2026.06</div></div>
+  {contactbar()}
 """
 
 
