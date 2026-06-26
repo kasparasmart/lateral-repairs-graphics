@@ -95,7 +95,7 @@ def glassfiber():
         ("diameter", "Tube diameter, internal", "70 mm"),
     ]
     body = B.css() + EXTRA_CSS
-    body += head("Glassfiber ", "Complex 1080",
+    body += head("Glassfiber ", "Complex 1050",
                  "E-CR glass-fibre reinforcement complex for structural pipe rehabilitation and CIPP lining.")
     body += feature_table2("Technical data", rows)
     body += """
@@ -222,7 +222,7 @@ def endcap():
 
 
 def main():
-    jobs = [("LR_Glassfiber_Complex_1080.pdf", glassfiber()),
+    jobs = [("LR_Glassfiber_Complex_1050.pdf", glassfiber()),
             ("LR_Connection_Liners.pdf", connection()),
             ("LR_End_Cap_Glue.pdf", endcap())]
     for name, html in jobs:
