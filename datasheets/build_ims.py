@@ -267,6 +267,9 @@ def render(p):
     p = dict(p)
     thickness = fmt_thickness(p)
     textile_weight = fmt_weight(p, "Weight")
+    coating_weight = fmt_weight(p, "Weight of coating")
+    if p["slug"] == "core":
+        coating_weight = "300* g/m²"
     # the current PRO range is 4.0 mm and 5.5 mm; the 4.5 mm sheet is updated to
     # 5.5 mm to match the manufacturer's Liners_TDS data.
     if p["slug"] == "pro-45":
@@ -295,7 +298,7 @@ def render(p):
         ("textile", "Textile", gd.get("Type of fibers", "")),
         ("weight", "Textile weight", textile_weight),
         ("coating", "Coating", gd.get("Coating", "")),
-        ("weight", "Coating weight", fmt_weight(p, "Weight of coating")),
+        ("weight", "Coating weight", coating_weight),
         ("colour", "Colour / coating", f'{gd.get("Basic color","")} / {gd.get("Color coating","")}'),
         ("resin", "Water penetration", water(p)),
         ("storage", "Storage", "Protected from light, dry"),
