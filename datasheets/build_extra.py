@@ -155,6 +155,7 @@ def connection():
     # ---- page 1: product description + illustration ----
     body += head("Connection ", "Liners",
                  "Flexible polyester knitted hose with thermoplastic coating for the rehabilitation of lateral connections.")
+    body += B.pagelogo()
     body += """
   <div class="secttl">Product description</div>
   <div class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0">
@@ -258,6 +259,7 @@ def sds():
     body += head("MFE 7516 ", "Vinyl Ester",
                  "Styrene-free vinyl ester resin — Safety Data Sheet according to Regulation (EC) No. 1272/2008.",
                  kind="Safety data sheet")
+    body += B.pagelogo()
 
     body += sec("1.", "Identification",
         p("Product description", "MFE 7516 Vinyl Ester (styrene-free)")

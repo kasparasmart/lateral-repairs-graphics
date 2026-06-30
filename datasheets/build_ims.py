@@ -87,6 +87,7 @@ def css():
   html {{ font-family:'Ral',sans-serif; color:#1a1820; font-size:8.5pt; }}
   body {{ margin:0; }}
   .sidebar {{ position:fixed; top:-11mm; left:-13mm; width:6mm; height:297mm; background:{CHAR}; }}
+  .pagelogo {{ position:fixed; top:-8mm; right:-6mm; height:11mm; width:auto; }}
   .contactbar {{ position:fixed; bottom:-18mm; left:-13mm; width:210mm; height:13mm;
     background:{PINK}; }}
   .contactbar .crow {{ display:table; width:100%; height:13mm; }}
@@ -160,6 +161,11 @@ CONTACT = {
     "phone": _CW.format('<path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>'),
     "pin": _CW.format('<path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>'),
 }
+
+
+def pagelogo():
+    """LR drop logo repeated at the top-right of every page (for multi-page docs)."""
+    return f'<img class="pagelogo" src="{DROP}" alt="">'
 
 
 def contactbar():
