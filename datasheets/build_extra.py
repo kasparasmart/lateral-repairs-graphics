@@ -55,6 +55,33 @@ EXTRA_CSS = f"""
     border:1px solid {B.PINK}; border-radius:8px; padding:10px 14px; margin-top:8px; }}
   .hazbox img {{ height:62px; width:auto; }}
   .hazbox .sig {{ font-weight:700; color:{B.PINK}; font-size:10pt; }}
+  /* SDS cover page */
+  .cover-haz {{ display:flex; gap:16px; align-items:center; background:{B.CHAR};
+    border-radius:12px; padding:16px 20px; margin-top:16px; }}
+  .cover-haz img {{ height:78px; width:auto; background:#fff; border-radius:8px; padding:4px; }}
+  .cover-haz .sig {{ color:{B.PINK}; font-weight:700; font-size:13pt; letter-spacing:.5px; }}
+  .cover-haz .hs {{ color:#fff; font-size:9pt; line-height:1.5; margin-top:5px; }}
+  .cover-haz .hs b {{ color:{B.PINK}; }}
+  .cover-grid {{ display:flex; gap:16px; margin-top:16px; }}
+  .cover-card {{ flex:1; border:1px solid #dcdae0; border-radius:12px; padding:16px 18px; }}
+  .cover-card h4 {{ margin:0 0 10px; font-size:8pt; font-weight:700; letter-spacing:.16em;
+    text-transform:uppercase; color:{B.PINK}; }}
+  .cover-card .r {{ font-size:9pt; color:#333; line-height:1.5; margin:0 0 7px; }}
+  .cover-card .r b {{ display:block; font-size:7.5pt; font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:{B.CHAR}; margin-bottom:1px; }}
+  .cover-card.em {{ border-color:{B.PINK}; background:#fdeef5; }}
+  .docmeta {{ display:flex; justify-content:space-between; align-items:center;
+    background:{B.CHAR}; color:#fff; border-radius:10px; padding:12px 20px; margin-top:16px; }}
+  .docmeta .dm {{ text-align:center; }}
+  .docmeta .dm .l {{ font-size:7pt; letter-spacing:.14em; text-transform:uppercase; color:#b9b3c0; }}
+  .docmeta .dm .v {{ font-size:10.5pt; font-weight:700; margin-top:2px; }}
+  .cover-eyebrow {{ display:inline-block; font-size:8pt; font-weight:700; letter-spacing:.2em;
+    text-transform:uppercase; color:{B.PINK}; margin:2px 0 0; }}
+  .qa-grid {{ display:flex; gap:12px; margin-top:10px; }}
+  .qa {{ flex:1; border:1px solid #e3e1e7; border-left:3px solid {B.PINK}; border-radius:8px;
+    padding:11px 13px; font-size:8.5pt; color:#444; line-height:1.45; }}
+  .qa b {{ display:block; color:{B.CHAR}; font-size:7.5pt; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }}
 </style>"""
 
 
@@ -261,6 +288,46 @@ def sds():
                  kind="Safety data sheet")
     body += B.pagelogo()
 
+    # ============ COVER PAGE ============
+    body += '<div class="cover-eyebrow">Hazard overview · GHS / CLP</div>'
+    body += ('<div class="cover-haz"><img src="' + GHS07 + '">'
+             '<div><span class="sig">Warning</span>'
+             '<div class="hs"><b>H315</b> Causes skin irritation. &nbsp; <b>H317</b> May cause an allergic skin reaction. &nbsp; <b>H319</b> Causes serious eye irritation.<br>'
+             '<b>P280</b> Wear protective gloves. &nbsp; <b>P305+P351+P338</b> IF IN EYES: rinse cautiously with water for several minutes; remove contact lenses if easy; continue rinsing.</div></div></div>')
+
+    body += ('<div class="cover-grid">'
+             '<div class="cover-card">'
+             '<h4>Product identification</h4>'
+             '<p class="r"><b>Product</b>MFE 7516 Vinyl Ester (styrene-free)</p>'
+             '<p class="r"><b>Product type</b>Environmentally friendly, corrosion-resistant resin</p>'
+             '<p class="r"><b>Intended use</b>SU3 Industrial · SU12 Manufacture of plastics · SU22 Professional uses</p>'
+             '<p class="r"><b>Stabiliser</b>Mequinol (≥ 180 – ≤ 220 ppm)</p>'
+             '</div>'
+             '<div class="cover-card em">'
+             '<h4>Manufacturer &amp; emergency</h4>'
+             '<p class="r"><b>Manufacturer</b>Lateral Repairs UAB<br>Paberžių g. 5, Tauragė, LT-72328, Lithuania</p>'
+             '<p class="r"><b>Contact</b>info@lateralrepairs.com · +370 612 12882 · Office +370 698 76581</p>'
+             '<p class="r"><b>Emergency telephone</b>+370 612 12882, or your local emergency number</p>'
+             '</div></div>')
+
+    body += ('<div class="docmeta">'
+             '<div class="dm"><div class="l">Document</div><div class="v">Safety Data Sheet</div></div>'
+             '<div class="dm"><div class="l">Regulation</div><div class="v">(EC) No. 1272/2008</div></div>'
+             '<div class="dm"><div class="l">Version</div><div class="v">V2026.1</div></div>'
+             '<div class="dm"><div class="l">Date of issue</div><div class="v">2026.06</div></div>'
+             '</div>')
+
+    body += '<div class="cover-eyebrow" style="margin-top:18px">First aid · quick reference</div>'
+    body += ('<div class="qa-grid">'
+             '<div class="qa"><b>Eye contact</b>Rinse thoroughly with plenty of water for at least 15 minutes and consult a physician.</div>'
+             '<div class="qa"><b>Skin contact</b>Wash off with soap and plenty of water. Consult a physician.</div>'
+             '<div class="qa"><b>Inhalation</b>Move to fresh air and keep at rest. Get medical advice if you feel unwell.</div>'
+             '<div class="qa"><b>If swallowed</b>Do NOT induce vomiting. Rinse mouth with water. Consult a physician.</div>'
+             '</div>')
+
+    body += '<div class="pagebreak"></div>'
+
+    # ============ SECTIONS (page 2+) ============
     body += sec("1.", "Identification",
         p("Product description", "MFE 7516 Vinyl Ester (styrene-free)")
         + p("Intended use", "Environmentally friendly, corrosion-resistant resin. SU3 — Industrial uses; SU12 — Manufacture of plastics products (compounding and conversion); SU22 — Professional uses.")
