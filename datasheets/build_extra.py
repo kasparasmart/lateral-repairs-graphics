@@ -345,8 +345,7 @@ def sds():
 
     body += sec("3.", "Composition / information on ingredients",
         p("Type", "Vinyl ester resin, styrene-free")
-        + p("Stabiliser", "Mequinol (≥ 180 – ≤ 220 ppm)")
-        + p("Relevant component", "2-Hydroxyethyl methacrylate (CAS 868-77-9)"))
+        + p("Stabiliser", "Mequinol (≥ 180 – ≤ 220 ppm)"))
 
     body += sec("4.", "First-aid measures",
         p("General advice", "Consult a physician. Show this safety data sheet to the doctor in attendance.")
@@ -397,8 +396,7 @@ def sds():
         + p("Hazardous decomposition", "No data available."))
 
     body += sec("11.", "Toxicological information",
-        p("Component", "2-Hydroxyethyl methacrylate (CAS 868-77-9)")
-        + p("Acute toxicity", "LD50 oral, rat: 5050 mg/kg. LD50 dermal, rabbit: &gt; 3 000 mg/kg.")
+        p("Acute toxicity", "LD50 oral, rat: 5050 mg/kg. LD50 dermal, rabbit: &gt; 3 000 mg/kg.")
         + p("Skin / eye", "Skin (rabbit): irritating (24 h). Eyes (rabbit): moderate eye irritation (24 h, Draize).")
         + p("Sensitisation", "May cause sensitisation by skin contact (OECD 406).")
         + p("Carcinogenicity", "IARC: no component ≥ 0,1 % identified as a carcinogen.")
