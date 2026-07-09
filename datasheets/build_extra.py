@@ -47,6 +47,7 @@ EXTRA_CSS = f"""
   .sds-body {{ padding:6px 2px 0; }}
   .sds-body p {{ margin:0 0 4px; font-size:8pt; color:#333; line-height:1.45; }}
   .sds-body p .lbl {{ font-weight:700; color:{B.CHAR}; }}
+  .sds-body p.subh {{ font-weight:700; color:{B.PINK}; font-size:8.3pt; margin:7px 0 2px; }}
   table.kv {{ width:100%; border-collapse:collapse; margin-top:3px; break-inside:auto; }}
   table.kv td {{ border-bottom:1px solid #e6e4ea; padding:2.5px 8px; font-size:8pt;
     vertical-align:top; }}
@@ -431,11 +432,121 @@ def sds():
     return body
 
 
+# --------------------------------------------------------------- Silicate Resin SDSs
+import json as _json
+import re as _re
+GHS = {n: "data:image/png;base64," + B.b64(os.path.join(HERE, "assets", f"{n}_{s}.png"))
+       for n, s in (("ghs05", "corrosion"), ("ghs07", "exclamation"), ("ghs08", "health"))}
+SILICATE = _json.load(open(os.path.join(HERE, "assets", "silicate_sds.json"), encoding="utf-8"))
+
+
+def _esc(s):
+    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
+def _para(text):
+    text = _esc(text.strip())
+    m = _re.match(r"([^:]{1,48}):\s+(.+)", text)
+    if m and not m.group(1).endswith(")"):
+        return f'<p><span class="lbl">{m.group(1)}:</span> {m.group(2)}</p>'
+    return f"<p>{text}</p>"
+
+
+def render_section(sec):
+    num, title, lines = sec["num"], sec["title"], sec["lines"]
+    inner = ""
+    if num == 9:
+        kv_rows, extra = [], []
+        for ln in lines:
+            m = _re.match(r"\s*[a-z]\)\s*(.+?):\s*(.*)$", ln)
+            if m and m.group(2).strip():
+                kv_rows.append((m.group(1).strip(), m.group(2).strip()))
+            elif ln.strip() and not _re.match(r"\s*9\.\d", ln) and not _re.match(r"\s*[a-z]\)", ln):
+                extra.append(ln.strip())
+        if kv_rows:
+            inner += '<table class="kv">' + "".join(
+                f'<tr><td class="k">{_esc(k)}</td><td>{_esc(v)}</td></tr>' for k, v in kv_rows) + "</table>"
+        for e in extra:
+            inner += _para(e)
+    else:
+        buf = []
+        def flush():
+            nonlocal buf
+            if buf:
+                inner_add = _para(" ".join(buf))
+                buf = []
+                return inner_add
+            return ""
+        for ln in lines:
+            s = ln.strip()
+            if not s:
+                inner += flush(); continue
+            if _re.match(r"^\d{1,2}\.\d+(\.\d+)*\.?\s+\S", s):
+                inner += flush()
+                inner += f'<p class="subh">{_esc(s)}</p>'
+            elif _re.match(r"^([a-z]\)|[-•])\s", s) or _re.match(r"^[A-Z0-9][^:]{0,46}:\s", s):
+                inner += flush()
+                buf = [s]
+            else:
+                buf.append(s)
+        inner += flush()
+    return f'<div class="sds-sec"><b>{num}.</b>{_esc(title)}</div><div class="sds-body">{inner}</div>'
+
+
+def render_silicate(slug):
+    d = SILICATE[slug]
+    c = d["cover"]
+    body = B.css() + EXTRA_CSS
+    use_short = c["use"].replace("“", '"').replace("”", '"')
+    body += head(d["title_a"] + " ", d["title_b"], use_short[:150],
+                 kind="Safety data sheet")
+    body += B.pagelogo()
+
+    # ---- cover ----
+    pics = "".join(f'<img src="{GHS[p]}">' for p in c["pictos"])
+    hlist = " &nbsp; ".join(f'<b>{code}</b> {_esc(desc)}.' for code, desc in c["hstatements"])
+    plist = " &nbsp; ".join(f'<b>{code}</b> {_esc(desc)}' for code, desc in c["pstatements"][:4])
+    body += '<div class="cover-eyebrow">Hazard overview · GHS / CLP</div>'
+    body += (f'<div class="cover-haz">{pics}'
+             f'<div><span class="sig">{_esc(c["signal"])}</span>'
+             f'<div class="hs">{hlist}<br>{plist}</div></div></div>')
+
+    body += ('<div class="cover-grid">'
+             '<div class="cover-card"><h4>Product identification</h4>'
+             f'<p class="r"><b>Product</b>{_esc(d["title_a"])} {_esc(d["title_b"].replace(" · ", " "))}</p>'
+             f'<p class="r"><b>Identified use</b>{_esc(use_short)}</p></div>'
+             '<div class="cover-card em"><h4>Manufacturer &amp; emergency</h4>'
+             '<p class="r"><b>Manufacturer</b>UAB Lateral Repairs<br>Paberžių g. 5, Tauragė, LT-72328, Lithuania</p>'
+             f'<p class="r"><b>Contact</b>{_esc(c["email"])} · {_esc(c["phone"])}</p>'
+             f'<p class="r"><b>Emergency</b>{_esc(c["emergency"])}</p></div></div>')
+
+    m = c["meta"]
+    body += ('<div class="docmeta">'
+             '<div class="dm"><div class="l">Document</div><div class="v">Safety Data Sheet</div></div>'
+             '<div class="dm"><div class="l">Regulation</div><div class="v">1907/2006 · 2015/830</div></div>'
+             f'<div class="dm"><div class="l">Version</div><div class="v">{_esc(m["version"] or "1.0 / EN")}</div></div>'
+             f'<div class="dm"><div class="l">Date of issue</div><div class="v">{_esc(m["issue"] or "01/06/2020")}</div></div>'
+             '</div>')
+    body += '<div class="pagebreak"></div>'
+
+    # ---- 16 sections ----
+    for sec in d["sections"]:
+        body += render_section(sec)
+
+    body += f'<div class="foot"><div>Safety data sheet · Version {_esc(m["version"] or "1.0 / EN")} · Issued {_esc(m["issue"] or "01/06/2020")}</div></div>'
+    body += B.contactbar()
+    return body
+
+
 def main():
     jobs = [("LR_Glassfiber_Complex_1050.pdf", glassfiber()),
             ("LR_Connection_Liners.pdf", connection()),
             ("LR_End_Cap_Glue.pdf", endcap()),
-            ("LR_MFE7516_Vinyl_Ester_SDS.pdf", sds())]
+            ("LR_MFE7516_Vinyl_Ester_SDS.pdf", sds()),
+            ("LR_Silicate_Resin_Summer_SDS.pdf", render_silicate("summer")),
+            ("LR_Silicate_Resin_Winter_SDS.pdf", render_silicate("winter")),
+            ("LR_Silicate_Resin_Waterglass_Hardener_SDS.pdf", render_silicate("waterglass")),
+            ("LR_Silicate_Resin_W01_Fast_SDS.pdf", render_silicate("w01"))]
     for name, html in jobs:
         HTML(string=html, base_url=HERE).write_pdf(os.path.join(OUT, name))
         print("wrote", name)
