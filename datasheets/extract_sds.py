@@ -125,6 +125,95 @@ def extract_cover(text, raw):
                 hstatements=hstate, pstatements=pstate[:6])
 
 
+HDR_JUNK = re.compile(r"^(SAFETY DATA SHEET|Trade name:|According to Regulation|"
+                      r"No 1907/2006|Regulation \(EU\)|Date of (print|issue)|Version)")
+
+
+def parse_classification(raw):
+    """Section 2.1 CLP classification table -> [(hazard class, H-code, statement)]."""
+    m = re.search(r"2\.1\. Classification.*?Classification according to[^\n]*\n(.*?)\n\s*2\.2\.",
+                  raw, re.S)
+    if not m:
+        return []
+    rows, pending = [], None
+    for ln in m.group(1).split("\n"):
+        if HDR_JUNK.search(ln.strip()) or not ln.strip():
+            continue
+        mm = re.match(r"^\s*([A-Za-z][\w.'’]*(?:\s+[\w.'’()]+)*?\.?\s*\d[A-Z]?)\s{2,}(H\d{3})\s+(.*)$", ln)
+        if mm:
+            if pending:
+                rows.append(pending)
+            pending = [re.sub(r"\s+", " ", mm.group(1)).strip(), mm.group(2),
+                       mm.group(3).strip()]
+        elif pending and not re.match(r"^\s*\d\.\d", ln):      # wrapped statement
+            pending[2] = (pending[2] + " " + ln.strip()).strip()
+    if pending:
+        rows.append(pending)
+    return [[c[0], c[1], re.sub(r"\s+", " ", c[2]).rstrip(".")] for c in rows]
+
+
+def parse_composition(raw):
+    """Section 3 mixtures table -> [{name, ec, cas, reach, content, classification}]."""
+    m = re.search(r"SECTION 3:.*?\n(.*?)\n\s*1\s*\n?\s*[–-]\s*See Section 16", raw, re.S)
+    if not m:
+        m = re.search(r"SECTION 3:(.*?)SECTION 4:", raw, re.S)
+        if not m:
+            return []
+    block = m.group(1)
+    # column x-positions (column within the line, not absolute offset)
+    def xpos(kw):
+        for ln in block.split("\n"):
+            i = ln.find(kw)
+            if i >= 0:
+                return i
+        return None
+    ec = xpos("EC No.") or 30
+    cas = xpos("CAS No.") or 44
+    reach = (xpos("REACH") or 58) - 2
+    content = (xpos("(%)") or xpos("Content") or 72) - 4
+    cat = (xpos("Hazard") or xpos("categories") or 86) + 1
+    hph = xpos("H-phrase") or 104
+    bnds = [0, ec, cas, reach, content, cat, hph, 999]
+    keys = ["name", "ec", "cas", "reach", "content", "cat", "hph"]
+
+    data_lines = []
+    started = False
+    for ln in block.split("\n"):
+        if re.search(r"\bName\b", ln) and "EC No." in ln:
+            started = True
+            continue
+        if not started:
+            continue
+        if HDR_JUNK.search(ln.strip()):
+            continue
+        if ln.strip():
+            data_lines.append(ln)
+
+    def slice_cols(ln):
+        return {keys[i]: ln[bnds[i]:bnds[i + 1]].strip() for i in range(7)}
+
+    sliced = [slice_cols(ln) for ln in data_lines]
+    anchors = [i for i, s in enumerate(sliced)
+               if re.search(r"[<>≤≥]?\s*\d+\s*(–|-|to)?\s*\d*\s*%?$", s["content"]) and s["content"]]
+    if not anchors:
+        anchors = [i for i, s in enumerate(sliced) if s["cas"] or s["ec"]]
+    ings = []
+    for k, a in enumerate(anchors):
+        lo = 0 if k == 0 else (anchors[k - 1] + a) // 2 + 1
+        hi = len(sliced) if k == len(anchors) - 1 else (a + anchors[k + 1]) // 2
+        chunk = sliced[lo:hi]
+        name = " ".join(s["name"] for s in chunk if s["name"])
+        cats = [s["cat"] for s in chunk if s["cat"]]
+        hphs = [s["hph"] for s in chunk if s["hph"]]
+        cls = ", ".join(f"{c} ({h})" for c, h in zip(cats, hphs)) if cats else (
+            ", ".join(cats + hphs) if (cats or hphs) else "—")
+        pick = lambda key: next((s[key] for s in chunk if s[key]), "—")
+        ings.append(dict(name=re.sub(r"\s+", " ", name).strip() or "—",
+                         ec=pick("ec"), cas=pick("cas"), reach=pick("reach"),
+                         content=pick("content"), classification=cls or "—"))
+    return ings
+
+
 def pictos(hcodes):
     codes = set(hcodes)
     out = []
@@ -147,6 +236,10 @@ def main():
         cover = extract_cover(text, raw)
         cover["pictos"] = pictos([c for c, _ in cover["hstatements"]])
         secs = split_sections(text)
+        class_tbl = parse_classification(raw)
+        for s in secs:
+            if s["num"] == 2 and class_tbl:
+                s["class_table"] = class_tbl
         data[slug] = dict(title_a=ta, title_b=tb, cover=cover, sections=secs)
         print(f"{slug:11s} sections={len(secs)} H={len(cover['hstatements'])} "
               f"pictos={cover['pictos']} issue={cover['meta']['issue']}")

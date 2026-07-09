@@ -101,6 +101,18 @@
      "  Silicic acid, sodium salt",
      "2.3. Other hazards",
      "The substances in the mixture do not meet the PBT/vPvB criteria according to REACH, Annex XIII."
+    ],
+    "class_table": [
+     [
+      "Skin Irrit. 2",
+      "H315",
+      "Causes skin irritation"
+     ],
+     [
+      "Eye Dam. 1",
+      "H318",
+      "Causes serious eye damage"
+     ]
     ]
    },
    {
@@ -616,6 +628,53 @@
      "2.3. Other hazards",
      "The mixture does not meet persistent (P) and bioaccumulation (B) criteria, but it meets the criteria for toxicity (T).",
      "The mixture is not PBT or vPvB."
+    ],
+    "class_table": [
+     [
+      "Acute Tox. 4",
+      "H302",
+      "Harmful if swallowed"
+     ],
+     [
+      "Skin Irrit. 2",
+      "H315",
+      "Causes skin irritation"
+     ],
+     [
+      "Skin Sens. 1B",
+      "H317",
+      "May cause an allergic skin reaction"
+     ],
+     [
+      "Eye Irrit. 2",
+      "H319",
+      "Causes serious eye irritation"
+     ],
+     [
+      "Acute Tox. 4",
+      "H332",
+      "Harmful if inhaled"
+     ],
+     [
+      "Resp. Sens. 1",
+      "H334",
+      "May cause allergy or asthma symptoms or breathing difficulties if inhaled"
+     ],
+     [
+      "STOT SE 3",
+      "H335",
+      "May cause respiratory irritation"
+     ],
+     [
+      "Carc. 2",
+      "H351",
+      "Suspected of causing cancer"
+     ],
+     [
+      "STOT RE 2",
+      "H373",
+      "May cause damage to organs through prolonged or repeated exposure: respiratory system, inhalation"
+     ]
     ]
    },
    {
@@ -1288,6 +1347,18 @@
      "  Silicic acid, sodium salt",
      "2.3. Other hazards",
      "The substances in the mixture do not meet the PBT/vPvB criteria according to REACH, Annex XIII."
+    ],
+    "class_table": [
+     [
+      "Skin Irrit. 2",
+      "H315",
+      "Causes skin irritation"
+     ],
+     [
+      "Eye Dam. 1",
+      "H318",
+      "Causes serious eye damage"
+     ]
     ]
    },
    {
@@ -1803,6 +1874,53 @@
      "2.3. Other hazards",
      "The mixture does not meet persistent (P) and bioaccumulation (B) criteria, but it meets the criteria for toxicity",
      "(T). The mixture is not PBT or vPvB."
+    ],
+    "class_table": [
+     [
+      "Acute Tox. 4",
+      "H302",
+      "Harmful if swallowed"
+     ],
+     [
+      "Skin Irrit. 2",
+      "H315",
+      "Causes skin irritation"
+     ],
+     [
+      "Skin Sens. 1B",
+      "H317",
+      "May cause an allergic skin reaction"
+     ],
+     [
+      "Eye Irrit. 2",
+      "H319",
+      "Causes serious eye irritation"
+     ],
+     [
+      "Acute Tox. 4",
+      "H332",
+      "Harmful if inhaled"
+     ],
+     [
+      "Resp. Sens. 1",
+      "H334",
+      "May cause allergy or asthma symptoms or breathing difficulties if inhaled"
+     ],
+     [
+      "STOT SE 3",
+      "H335",
+      "May cause respiratory irritation"
+     ],
+     [
+      "Carc. 2",
+      "H351",
+      "Suspected of causing cancer"
+     ],
+     [
+      "STOT RE 2",
+      "H373",
+      "May cause damage to organs through prolonged or repeated exposure: respiratory system, inhalation"
+     ]
     ]
    },
    {

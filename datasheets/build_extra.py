@@ -48,6 +48,14 @@ EXTRA_CSS = f"""
   .sds-body p {{ margin:0 0 4px; font-size:8pt; color:#333; line-height:1.45; }}
   .sds-body p .lbl {{ font-weight:700; color:{B.CHAR}; }}
   .sds-body p.subh {{ font-weight:700; color:{B.PINK}; font-size:8.3pt; margin:7px 0 2px; }}
+  table.clp, table.comp {{ width:100%; border-collapse:collapse; margin:4px 0 6px; }}
+  table.clp th, table.comp th {{ background:{B.CHAR}; color:#fff; font-weight:600;
+    font-size:7.3pt; text-align:left; padding:4px 7px; border:1px solid #fff; }}
+  table.clp td, table.comp td {{ border:1px solid #d8d6dc; padding:3px 7px; font-size:8pt;
+    vertical-align:top; }}
+  table.clp tr:nth-child(even) td, table.comp tr:nth-child(even) td {{ background:#f4f2f6; }}
+  table.clp td.c {{ font-weight:700; color:{B.PINK}; white-space:nowrap; }}
+  table.comp td.n {{ font-weight:600; color:{B.CHAR}; }}
   table.kv {{ width:100%; border-collapse:collapse; margin-top:3px; break-inside:auto; }}
   table.kv td {{ border-bottom:1px solid #e6e4ea; padding:2.5px 8px; font-size:8pt;
     vertical-align:top; }}
@@ -439,6 +447,29 @@ GHS = {n: "data:image/png;base64," + B.b64(os.path.join(HERE, "assets", f"{n}_{s
        for n, s in (("ghs05", "corrosion"), ("ghs07", "exclamation"), ("ghs08", "health"))}
 SILICATE = _json.load(open(os.path.join(HERE, "assets", "silicate_sds.json"), encoding="utf-8"))
 
+# Composition tables (hardcoded from the source SDSs for accuracy):
+# A-component / water glass (Summer, Waterglass Hardener); B-component /
+# polyisocyanate (Winter, W01 Fast).
+COMP_A = [
+    ("Silicic acid, sodium salt (Molar ratio Na₂O : SiO₂ = 1 : &gt; 1.6 – &lt; 2.6)",
+     "215-687-4", "1344-09-8", "01-2119448725-31", "25–50", "Skin Irrit. 2 (H315), Eye Dam. 1 (H318)"),
+    ("Water", "231-791-2", "7732-18-5", "—", "50–75", "—"),
+]
+_BHAZ = ("Acute Tox. 4 (H332), Skin Irrit. 2 (H315), Eye Irrit. 2 (H319), "
+         "Resp. Sens. 1 (H334), Skin Sens. 1B (H317), Carc. 2 (H351), "
+         "STOT SE 3 (H335), STOT RE 2 (H373)")
+COMP_B = [
+    ("Isocyanic acid, polymethylene-polyphenylene ester (Polymeric MDI)",
+     "(polymer)", "9016-87-9", "(polymer)", "&gt; 60", _BHAZ),
+    ("Tris(2-chloro-1-methylethyl) phosphate (TCPP)",
+     "237-158-7", "13674-84-5", "01-2119486772-26", "&gt; 10", "Acute Tox. 4 (H302)"),
+    ("4,4'-Methylenediphenyl diisocyanate, oligomeric reaction products with "
+     "2,4'-diisocyanatodiphenylmethane, 2,2'-methylenediphenyl diisocyanate and "
+     "α-hydro-ω-hydroxypoly[oxy(methyl-1,2-ethanediyl)]",
+     "951-860-7", "158885-25-7", "(polymer)", "≤ 5", _BHAZ),
+]
+COMP_BY_SLUG = {"summer": COMP_A, "waterglass": COMP_A, "winter": COMP_B, "w01": COMP_B}
+
 
 def _esc(s):
     return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
@@ -452,9 +483,50 @@ def _para(text):
     return f"<p>{text}</p>"
 
 
-def render_section(sec):
+def _clp_table(rows):
+    body = "".join(f'<tr><td>{_esc(c)}</td><td class="c">{code}</td><td>{_esc(st)}.</td></tr>'
+                   for c, code, st in rows)
+    return ('<table class="clp"><tr><th>Hazard class / category</th><th>Code</th>'
+            f'<th>Hazard statement</th></tr>{body}</table>')
+
+
+def _comp_table(rows):
+    body = ""
+    for name, ec, cas, reach, content, cls in rows:
+        body += (f'<tr><td class="n">{name}</td><td>{ec}</td><td>{cas}</td>'
+                 f'<td>{reach}</td><td>{content}</td><td>{cls}</td></tr>')
+    return ('<table class="comp"><tr><th>Substance</th><th>EC No.</th><th>CAS No.</th>'
+            '<th>REACH Reg. No.</th><th>Content (%)</th><th>Classification (CLP)</th></tr>'
+            f'{body}</table>')
+
+
+def render_section(sec, comp=None):
     num, title, lines = sec["num"], sec["title"], sec["lines"]
     inner = ""
+    # 2.1 classification as a table, then the rest (2.2 label elements, 2.3 …)
+    if num == 2 and sec.get("class_table"):
+        inner += '<p class="subh">2.1. Classification of the substance or mixture</p>'
+        inner += '<p>Classification according to Regulation (EC) No 1272/2008 (CLP):</p>'
+        inner += _clp_table(sec["class_table"])
+        rest = lines
+        for i, ln in enumerate(lines):
+            if _re.match(r"^\s*2\.2\.", ln):
+                rest = lines[i:]
+                break
+        else:
+            rest = []
+        lines = rest
+        num_render = num
+        # fall through to generic rendering of the remaining lines below
+        sec = {"num": num, "title": title, "lines": lines}
+        num, title = sec["num"], sec["title"]
+    # 3 composition table (hardcoded, accurate) + footnote
+    if num == 3 and comp:
+        inner += '<p class="subh">3.2. Mixtures</p>'
+        inner += _comp_table(comp)
+        inner += ('<p style="color:#777;font-size:7.5pt;margin-top:4px">'
+                  'See Section 16 for the full text of the hazard statements and abbreviations above.</p>')
+        return f'<div class="sds-sec"><b>{num}.</b>{_esc(title)}</div><div class="sds-body">{inner}</div>'
     if num == 9:
         kv_rows, extra = [], []
         for ln in lines:
@@ -530,8 +602,9 @@ def render_silicate(slug):
     body += '<div class="pagebreak"></div>'
 
     # ---- 16 sections ----
+    comp = COMP_BY_SLUG.get(slug)
     for sec in d["sections"]:
-        body += render_section(sec)
+        body += render_section(sec, comp=comp)
 
     body += f'<div class="foot"><div>Safety data sheet · Version {_esc(m["version"] or "1.0 / EN")} · Issued {_esc(m["issue"] or "01/06/2020")}</div></div>'
     body += B.contactbar()
