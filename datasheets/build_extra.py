@@ -791,6 +791,14 @@ def _sec2(d, c, sec):
         if _re.match(r"^\s*2\.2\.", ln):
             rest = sec["lines"][i:]
             break
+    # keep "Hazard pictograms:" as its own label (a blank line resets the
+    # block parser so the preceding "Labelling ..." lead is not merged in)
+    split_rest = []
+    for ln in rest:
+        if ln.strip().lower() == "hazard pictograms:":
+            split_rest.append("")
+        split_rest.append(ln)
+    rest = split_rest
     pics = "".join(f'<img src="{GHS[p]}">' for p in c["pictos"])
 
     def hook(label):
