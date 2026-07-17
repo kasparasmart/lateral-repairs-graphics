@@ -9,6 +9,9 @@ import subprocess
 SRC = "/tmp/redts"
 OUT = os.path.join(os.path.dirname(__file__), "assets", "silicate_sds.json")
 
+# corrected component letters (customer feedback 2026-07):
+COMPONENT_LETTER = {"summer": "A", "winter": "A", "w01": "A", "waterglass": "B"}
+
 FILES = [
     ("LR Silicate Resin Type Summer.pdf", "summer", "LR Silicate Resin", "Type Summer"),
     ("LR Silicate Resin Type W (WINTER) EN.pdf", "winter", "LR Silicate Resin", "Type W · Winter"),
@@ -29,8 +32,9 @@ META_RE = re.compile(r"(Date of print|Date of issue|Version)\s*:?\s*([0-9./A-Za-
 
 
 def clean_lines(txt):
-    txt = txt.replace('\uf0b0', '°').replace('\uf0a3', '≤').replace('\uf0b3', '≥')
-    txt = txt.replace('\uf02d', '-').replace('\uf0ae', '→').replace('\ufb01', 'fi')
+    txt = txt.replace('\uf0b0', '\u00b0').replace('\uf0a3', '\u2264').replace('\uf0b3', '\u2265')
+    txt = txt.replace('\uf02d', '-').replace('\uf0ae', '\u2192').replace('\ufb01', 'fi')
+    txt = txt.replace('\u00a0', ' ')
     txt = R.sub('[\uf000-\uf0ff]', '', txt)  # drop remaining Symbol/Wingdings glyphs
     out = []
     for raw in txt.split("\n"):
@@ -40,10 +44,9 @@ def clean_lines(txt):
             continue
         if DROP_RE.search(line.strip()):
             continue
-        # strip the right-hand "Date of print ... Version" columns that ride along
+        # strip the right-hand "Date of print ... Version" ride-along columns
         line = re.sub(r"\s{3,}(Date of (print|issue)|Version)\s*:.*$", "", line)
-        out.append(re.sub(r"[ \t]{2,}", "  ", line.rstrip()))
-    # collapse 3+ blank lines
+        out.append(line)   # keep leading indentation and internal gaps
     text = "\n".join(out)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text
@@ -232,10 +235,20 @@ def main():
     for fname, slug, ta, tb in FILES:
         raw = subprocess.check_output(
             ["pdftotext", "-layout", os.path.join(SRC, fname), "-"]).decode("utf-8", "ignore")
+        raw = raw.replace("drew@lateralrepairs.com", "info@lateralrepairs.com")
         text = clean_lines(raw)
         cover = extract_cover(text, raw)
+        letter = COMPONENT_LETTER.get(slug)
+        if letter:
+            fix = lambda t: re.sub(r'[\u201c"\u201d]([AB])[\u201c"\u201d](\s+component)',
+                                   '\u201c%s\u201d\\2' % letter, t)
+            cover["use"] = fix(cover["use"])
         cover["pictos"] = pictos([c for c, _ in cover["hstatements"]])
         secs = split_sections(text)
+        if letter:
+            for sec in secs:
+                if sec["num"] == 1:
+                    sec["lines"] = [fix(l) for l in sec["lines"]]
         class_tbl = parse_classification(raw)
         for s in secs:
             if s["num"] == 2 and class_tbl:

@@ -63,6 +63,17 @@ EXTRA_CSS = f"""
   .hazbox {{ display:flex; gap:14px; align-items:center; background:#fdeef5;
     border:1px solid {B.PINK}; border-radius:8px; padding:10px 14px; margin-top:8px; }}
   .hazbox img {{ height:62px; width:auto; }}
+  .sds-body p.lab {{ font-weight:700; color:#1a1820; font-size:8.2pt; margin:6px 0 1px; }}
+  .sds-body p.val {{ margin:0 0 2.5px 10px; font-size:8pt; color:#333; line-height:1.42; }}
+  .sds-body p.val.vin {{ margin-left:26px; }}
+  .sds-body p.pv {{ margin:0 0 3px; font-size:8pt; color:#333; line-height:1.45; }}
+  .sds-body b.code {{ color:{B.PINK}; font-weight:700; }}
+  .ghsrow {{ margin:3px 0 5px 10px; }}
+  .ghsrow img {{ height:1.35cm; width:auto; margin-right:9px; vertical-align:middle; }}
+  table.tox {{ width:100%; border-collapse:collapse; margin:4px 0 7px; }}
+  table.tox td {{ border:1px solid #d8d6dc; padding:3px 7px; font-size:8pt; vertical-align:top; }}
+  table.tox td.e {{ width:36%; font-weight:600; color:{B.CHAR}; background:#f4f2f6; }}
+  .fnote {{ margin:1px 0 0; font-size:7.2pt; color:#777; }}
   .hazbox .sig {{ font-weight:700; color:{B.PINK}; font-size:10pt; }}
   /* SDS cover page */
   .cover-haz {{ display:flex; gap:16px; align-items:center; background:{B.CHAR};
@@ -94,13 +105,14 @@ EXTRA_CSS = f"""
 </style>"""
 
 
-def head(title_a, title_b, subtitle, kind="Technical data sheet"):
+def head(title_a, title_b, subtitle, kind="Technical data sheet", show_drop=True):
+    drop_img = f'<img src="{B.DROP}" alt="">' if show_drop else ""
     return f"""
   <div class="sidebar"></div>
   <h1 class="tds">{kind}</h1>
   <div class="titlebar">
     <div class="t"><span class="a">{title_a}</span><span class="b">{title_b}</span></div>
-    <img src="{B.DROP}" alt="">
+    {drop_img}
   </div>
   <p class="lede">{subtitle}</p>"""
 
@@ -294,7 +306,7 @@ def sds():
     body = B.css() + EXTRA_CSS
     body += head("MFE 7516 ", "Vinyl Ester",
                  "Styrene-free vinyl ester resin — Safety Data Sheet according to Regulation (EC) No. 1272/2008.",
-                 kind="Safety data sheet")
+                 kind="Safety data sheet", show_drop=False)
     body += B.pagelogo()
 
     # ============ COVER PAGE ============
@@ -443,126 +455,400 @@ def sds():
 # --------------------------------------------------------------- Silicate Resin SDSs
 import json as _json
 import re as _re
+
 GHS = {n: "data:image/png;base64," + B.b64(os.path.join(HERE, "assets", f"{n}_{s}.png"))
        for n, s in (("ghs05", "corrosion"), ("ghs07", "exclamation"), ("ghs08", "health"))}
 SILICATE = _json.load(open(os.path.join(HERE, "assets", "silicate_sds.json"), encoding="utf-8"))
 
-# Composition tables (hardcoded from the source SDSs for accuracy):
-# A-component / water glass (Summer, Waterglass Hardener); B-component /
-# polyisocyanate (Winter, W01 Fast).
+# ---- Section 3 composition tables (verbatim from the source SDSs) ----------
 COMP_A = [
     ("Silicic acid, sodium salt (Molar ratio Na₂O : SiO₂ = 1 : &gt; 1.6 – &lt; 2.6)",
-     "215-687-4", "1344-09-8", "01-2119448725-31", "25–50", "Skin Irrit. 2 (H315), Eye Dam. 1 (H318)"),
+     "215-687-4", "1344-09-8", "01-2119448725-31", "25–50",
+     "Skin Irrit. 2 (H315), Eye Dam. 1 (H318)"),
     ("Water", "231-791-2", "7732-18-5", "—", "50–75", "—"),
 ]
+FOOT_A = ["¹ – See Section 16 for the full text of the abbreviations declared above."]
+
 _BHAZ = ("Acute Tox. 4 (H332), Skin Irrit. 2 (H315), Eye Irrit. 2 (H319), "
          "Resp. Sens. 1 (H334), Skin Sens. 1B (H317), Carc. 2 (H351), "
          "STOT SE 3 (H335), STOT RE 2 (H373)")
-COMP_B = [
-    ("Isocyanic acid, polymethylene-polyphenylene ester (Polymeric MDI)",
+_MDI_OLIGO = ("4,4'-Methylenediphenyl diisocyanate, oligomeric reaction products with "
+              "2,4'-diisocyanatodiphenylmethane, 2,2'-methylenediphenyl diisocyanate "
+              "and α-hydro-ω-hydroxypoly[oxy(methyl-1,2-ethanediyl)]³")
+COMP_WINTER = [
+    ("Isocyanic acid, polymethylene-polyphenylene ester (Polymeric MDI)²",
      "(polymer)", "9016-87-9", "(polymer)", "&gt; 60", _BHAZ),
     ("Tris(2-chloro-1-methylethyl) phosphate (TCPP)",
      "237-158-7", "13674-84-5", "01-2119486772-26", "&gt; 10", "Acute Tox. 4 (H302)"),
-    ("4,4'-Methylenediphenyl diisocyanate, oligomeric reaction products with "
-     "2,4'-diisocyanatodiphenylmethane, 2,2'-methylenediphenyl diisocyanate and "
-     "α-hydro-ω-hydroxypoly[oxy(methyl-1,2-ethanediyl)]",
-     "951-860-7", "158885-25-7", "(polymer)", "≤ 5", _BHAZ),
+    (_MDI_OLIGO, "951-860-7", "158885-25-7", "(polymer)", "≤ 5", _BHAZ),
 ]
-COMP_BY_SLUG = {"summer": COMP_A, "waterglass": COMP_A, "winter": COMP_B, "w01": COMP_B}
+FOOT_WINTER = [
+    "¹ – See Section 16 for the full text of the abbreviations declared above.",
+    "² – Contains &lt; 35% 4,4'-MDI (4,4'-methylenediphenyl diisocyanate) (CAS: 101-68-8).",
+    "³ – Contains &lt; 10% 4,4'-MDI (4,4'-methylenediphenyl diisocyanate) (CAS: 101-68-8).",
+]
+COMP_W01 = [
+    ("Isocyanic acid, polymethylene-polyphenylene ester (Polymeric MDI)²",
+     "(polymer)", "9016-87-9", "(polymer)", "&gt; 60", _BHAZ),
+    ("Tris(2-chloro-1-methylethyl) phosphate (TCPP)",
+     "237-158-7", "13674-84-5", "01-2119486772-26", "&gt; 10", "Acute Tox. 4 (H302)"),
+    (_MDI_OLIGO, "951-860-7", "158885-25-7", "(polymer)", "≤ 10", _BHAZ),
+    ("Triisobutyl phosphate", "204-798-3", "126-71-6", "01-2119957118-32", "≤ 10",
+     "Skin Sens. 1B (H317)"),
+]
+FOOT_W01 = [
+    "¹ – See Section 16 for the full text of the abbreviations declared above.",
+    "² – Contains &lt; 35% 4,4'-MDI (4,4'-methylenediphenyl diisocyanate) (CAS: 101-68-8).",
+    "³ – Contains ca. 10% 4,4'-MDI (4,4'-methylenediphenyl diisocyanate) (CAS: 101-68-8).",
+]
+COMP_BY_SLUG = {"summer": (COMP_A, FOOT_A), "waterglass": (COMP_A, FOOT_A),
+                "winter": (COMP_WINTER, FOOT_WINTER), "w01": (COMP_W01, FOOT_W01)}
+
+# supplier block (Section 1.3) — identical for all four, per customer feedback
+SUPPLIER_FIELDS = [
+    ("Producer/Supplier:", ["UAB Lateral Repairs"]),
+    ("Street/POB:", ["Paberziu g. 5"]),
+    ("Postcode/City/Country:", ["LT-72328, Taurage, Lithuania"]),
+    ("E-mail address for a competent person responsible for the safety data sheet:",
+     ["info@lateralrepairs.com"]),
+    ("Phone:", ["+370 698 76581"]),
+]
 
 
 def _esc(s):
-    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def _para(text):
-    text = _esc(text.strip())
-    m = _re.match(r"([^:]{1,48}):\s+(.+)", text)
-    if m and not m.group(1).endswith(")"):
-        return f'<p><span class="lbl">{m.group(1)}:</span> {m.group(2)}</p>'
-    return f"<p>{text}</p>"
+def _sq(s):
+    """collapse internal whitespace runs and escape"""
+    return _esc(_re.sub(r"\s{2,}", " ", s.strip()))
 
 
-def _clp_table(rows):
-    body = "".join(f'<tr><td>{_esc(c)}</td><td class="c">{code}</td><td>{_esc(st)}.</td></tr>'
-                   for c, code, st in rows)
-    return ('<table class="clp"><tr><th>Hazard class / category</th><th>Code</th>'
-            f'<th>Hazard statement</th></tr>{body}</table>')
+# value text that must NOT be treated as a bold label's start (it is data)
+_DATA_START = _re.compile(
+    r"^(LC50|LD50|EC50|EC10|IC50|NOEC|NOEL|NOAEC|NOAEL|DNEL|PNEC|BCF|OECD|DIN\b|"
+    r"EN\s?\d|ISO\s?\d|CAS\b|[0-9<>=≤≥~±]|ca\.|approx)", _re.I)
+_STMT = _re.compile(r"^([HP]\d{3}(?:\s*\+\s*[HP]\d{3})*)\b[.:]?\s+(\S.*)$")
+_HEAD = _re.compile(r"^(\d{1,2}(?:\.\d+)+\.?)\s*(.*)$")
+_COL_LABEL = _re.compile(r"^(.{1,62}?):\s{2,}(\S.*)$")
+_GAP_SPLIT = _re.compile(r"^(.{1,42}?)\s{3,}(\S.*)$")
+_BARE_LABEL = _re.compile(r"^(.{1,62}?):$")
+_INLINE_LABEL = _re.compile(r"^([A-Z][^:]{1,54}?):\s(\S.*)$")
 
 
-def _comp_table(rows):
-    body = ""
-    for name, ec, cas, reach, content, cls in rows:
-        body += (f'<tr><td class="n">{name}</td><td>{ec}</td><td>{cas}</td>'
-                 f'<td>{reach}</td><td>{content}</td><td>{cls}</td></tr>')
-    return ('<table class="comp"><tr><th>Substance</th><th>EC No.</th><th>CAS No.</th>'
-            '<th>REACH Reg. No.</th><th>Content (%)</th><th>Classification (CLP)</th></tr>'
-            f'{body}</table>')
+_SECTION_LABEL_KW = _re.compile(
+    r"exposure|DNEL|PNEC|LC50|LD50|EC50|IC50|NOAE|NOEC|OECD|CAS\b|mg/|"
+    r"rabbit|rats?\b|guinea|reaction products|isocyanate", _re.I)
 
 
-def render_section(sec, comp=None):
-    num, title, lines = sec["num"], sec["title"], sec["lines"]
-    inner = ""
-    # 2.1 classification as a table, then the rest (2.2 label elements, 2.3 …)
-    if num == 2 and sec.get("class_table"):
-        inner += '<p class="subh">2.1. Classification of the substance or mixture</p>'
-        inner += '<p>Classification according to Regulation (EC) No 1272/2008 (CLP):</p>'
-        inner += _clp_table(sec["class_table"])
-        rest = lines
-        for i, ln in enumerate(lines):
-            if _re.match(r"^\s*2\.2\.", ln):
-                rest = lines[i:]
-                break
-        else:
-            rest = []
-        lines = rest
-        num_render = num
-        # fall through to generic rendering of the remaining lines below
-        sec = {"num": num, "title": title, "lines": lines}
-        num, title = sec["num"], sec["title"]
-    # 3 composition table (hardcoded, accurate) + footnote
-    if num == 3 and comp:
-        inner += '<p class="subh">3.2. Mixtures</p>'
-        inner += _comp_table(comp)
-        inner += ('<p style="color:#777;font-size:7.5pt;margin-top:4px">'
-                  'See Section 16 for the full text of the hazard statements and abbreviations above.</p>')
-        return f'<div class="sds-sec"><b>{num}.</b>{_esc(title)}</div><div class="sds-body">{inner}</div>'
-    if num == 9:
-        kv_rows, extra = [], []
-        for ln in lines:
-            m = _re.match(r"\s*[a-z]\)\s*(.+?):\s*(.*)$", ln)
-            if m and m.group(2).strip():
-                kv_rows.append((m.group(1).strip(), m.group(2).strip()))
-            elif ln.strip() and not _re.match(r"\s*9\.\d", ln) and not _re.match(r"\s*[a-z]\)", ln):
-                extra.append(ln.strip())
-        if kv_rows:
-            inner += '<table class="kv">' + "".join(
-                f'<tr><td class="k">{_esc(k)}</td><td>{_esc(v)}</td></tr>' for k, v in kv_rows) + "</table>"
-        for e in extra:
-            inner += _para(e)
-    else:
-        buf = []
-        def flush():
-            nonlocal buf
-            if buf:
-                inner_add = _para(" ".join(buf))
-                buf = []
-                return inner_add
-            return ""
-        for ln in lines:
-            s = ln.strip()
-            if not s:
-                inner += flush(); continue
-            if _re.match(r"^\d{1,2}\.\d+(\.\d+)*\.?\s+\S", s):
-                inner += flush()
-                inner += f'<p class="subh">{_esc(s)}</p>'
-            elif _re.match(r"^([a-z]\)|[-•])\s", s) or _re.match(r"^[A-Z0-9][^:]{0,46}:\s", s):
-                inner += flush()
-                buf = [s]
+def _is_section_label(label):
+    """A short descriptive heading (bold) vs a long data descriptor (inline)."""
+    return len(label) <= 40 and not _SECTION_LABEL_KW.search(label)
+
+
+def _add_val(b, s):
+    """append a value line; join to the previous when it is a sentence wrap"""
+    s = _re.sub(r"\s{2,}", " ", s.strip())
+    vals = b["vals"]
+    if vals:
+        last = vals[-1]
+        if (not last.endswith((".", ";", ":")) and
+                (s[:1].islower() or last.endswith(("/", ",", "–", "-")))):
+            vals[-1] = last + " " + s
+            return
+    vals.append(s)
+
+
+def _blocks(lines):
+    """Reconstruct the source's two-column layout into typed blocks."""
+    blocks, cur = [], None
+    for raw in lines:
+        if not raw.strip():
+            cur = None
+            continue
+        indent = len(raw) - len(raw.lstrip())
+        s = raw.strip()
+
+        # continuation lines in the value column
+        if cur is not None and indent >= 20:
+            _add_val(cur, s)
+            continue
+
+        # H###/P### statement lines
+        m = _STMT.match(s)
+        if m and len(m.group(1)) <= 20:
+            cur = {"t": "stmt", "label": _re.sub(r"\s*\+\s*", "+", m.group(1)),
+                   "vals": [_re.sub(r"\s{2,}", " ", m.group(2).strip())]}
+            blocks.append(cur)
+            continue
+
+        # numbered sub-heading (may carry an inline label/value)
+        m = _HEAD.match(s)
+        if m and indent <= 6:
+            num, rest = m.group(1), m.group(2).strip()
+            cm = _COL_LABEL.match(rest)
+            gm = _GAP_SPLIT.match(rest)
+            im = _INLINE_LABEL.match(rest)
+            if cm:
+                cur = {"t": "head", "label": f"{num} {cm.group(1)}:", "vals": []}
+                blocks.append(cur)
+                _add_val(cur, cm.group(2))
+            elif gm:
+                cur = {"t": "head", "label": f"{num} {gm.group(1)}", "vals": []}
+                blocks.append(cur)
+                _add_val(cur, gm.group(2))
+            elif im and len(im.group(1).split()) <= 8:
+                cur = {"t": "head", "label": f"{num} {im.group(1)}:", "vals": []}
+                blocks.append(cur)
+                _add_val(cur, im.group(2))
             else:
-                buf.append(s)
-        inner += flush()
-    return f'<div class="sds-sec"><b>{num}.</b>{_esc(title)}</div><div class="sds-body">{inner}</div>'
+                cur = {"t": "head", "label": f"{num} {rest}".strip(), "vals": []}
+                blocks.append(cur)
+            continue
+
+        # orphan tail of a wrapped heading (e.g. "Marpol and the IBC Code   Not relevant")
+        if (cur is not None and cur["t"] == "head" and not cur["vals"] and indent <= 6
+                and ":" not in s
+                and not cur["label"].rstrip().endswith((".", ":"))):
+            gm = _GAP_SPLIT.match(s)
+            if gm and len(gm.group(1)) <= 32:
+                cur["label"] = cur["label"].rstrip() + " " + gm.group(1).strip()
+                _add_val(cur, gm.group(2))
+                continue
+            if len(s) <= 30 and ":" not in s and not s.endswith("."):
+                cur["label"] = cur["label"].rstrip() + " " + s
+                continue
+
+        # columnar "Label:   value"
+        m = _COL_LABEL.match(s)
+        if m and indent <= 14:
+            label, val = m.group(1).strip(), m.group(2).strip()
+            if indent <= 2 and _is_section_label(label):
+                cur = {"t": "label", "label": label + ":", "vals": []}
+                blocks.append(cur)
+                _add_val(cur, val)
+            else:
+                cur = {"t": "sub", "label": label + ":", "vals": []}
+                blocks.append(cur)
+                _add_val(cur, val)
+            continue
+
+        # bare "Label:" line
+        m = _BARE_LABEL.match(s)
+        if m and indent <= 14 and len(s) <= 96:
+            # merge a single wrapped lead paragraph that ended without
+            # punctuation (only one accumulated line — never a real list)
+            if (cur is not None and cur["t"] == "para" and len(cur["vals"]) == 1
+                    and not cur["vals"][-1].rstrip().endswith((".", ";", ":", "!", "?"))):
+                cur["t"] = "label"
+                cur["label"] = cur["vals"].pop() + " " + s
+                if "raw" in cur:
+                    del cur["raw"]
+                cur["vals"] = []
+                continue
+            is_lab = indent <= 2 and _is_section_label(s[:-1])
+            cur = {"t": "label" if is_lab else "sub", "label": s, "vals": []}
+            blocks.append(cur)
+            continue
+
+        # columnar two-part line without a colon (species/data rows)
+        m = _GAP_SPLIT.match(s)
+        if m and indent <= 16:
+            cur = {"t": "sub", "label": m.group(1).strip(), "vals": []}
+            blocks.append(cur)
+            _add_val(cur, m.group(2))
+            continue
+
+        # single-space "Label: value" (only when the value is not data-like)
+        m = _INLINE_LABEL.match(s)
+        if (m and indent <= 8 and len(m.group(1).split()) <= 8
+                and _is_section_label(m.group(1).strip())
+                and not _DATA_START.match(m.group(2))):
+            cur = {"t": "label", "label": m.group(1).strip() + ":", "vals": []}
+            blocks.append(cur)
+            _add_val(cur, m.group(2))
+            continue
+
+        # plain paragraph line
+        if cur is not None and cur["t"] == "para":
+            if cur["raw"] >= 85:
+                cur["vals"][-1] += " " + _re.sub(r"\s{2,}", " ", s)
+            else:
+                cur["vals"].append(_re.sub(r"\s{2,}", " ", s))
+            cur["raw"] = len(raw)
+        else:
+            cur = {"t": "para", "vals": [_re.sub(r"\s{2,}", " ", s)], "raw": len(raw)}
+            blocks.append(cur)
+    return blocks
+
+
+def _render_blocks(blocks, after_label_hook=None):
+    html = ""
+    for b in blocks:
+        t = b["t"]
+        if t == "head":
+            html += f'<p class="subh">{_esc(b["label"])}</p>'
+            for v in b["vals"]:
+                html += f'<p class="val">{_esc(v)}</p>'
+        elif t == "label":
+            html += f'<p class="lab">{_esc(b["label"])}</p>'
+            if after_label_hook:
+                html += after_label_hook(b["label"])
+            for v in b["vals"]:
+                html += f'<p class="val">{_esc(v)}</p>'
+        elif t == "sub":
+            joined = (b["label"] + " " + b["vals"][0]) if b["vals"] else b["label"]
+            html += f'<p class="val">{_esc(joined)}</p>'
+            for v in b["vals"][1:]:
+                html += f'<p class="val vin">{_esc(v)}</p>'
+        elif t == "stmt":
+            txt = " ".join(b["vals"])
+            html += f'<p class="val"><b class="code">{b["label"]}</b> {_esc(txt)}</p>'
+        else:
+            for v in b["vals"]:
+                html += f'<p class="pv">{_esc(v)}</p>'
+    return html
+
+
+def _tox_table(blocks):
+    """Section 11: two-column data table like the original document."""
+    html, rows = "", []
+
+    def flush():
+        nonlocal html, rows
+        if rows:
+            html += '<table class="tox">' + "".join(rows) + "</table>"
+            rows = []
+
+    for b in blocks:
+        t = b["t"]
+        if t in ("label", "sub"):
+            ind = ' style="padding-left:16px;font-weight:400"' if t == "sub" else ""
+            cell = "<br>".join(_esc(v) for v in b["vals"]) or "—"
+            rows.append(f'<tr><td class="e"{ind}>{_esc(b["label"])}</td><td>{cell}</td></tr>')
+        elif t == "head":
+            flush()
+            html += f'<p class="subh">{_esc(b["label"])}</p>'
+            for v in b["vals"]:
+                html += f'<p class="val">{_esc(v)}</p>'
+        else:
+            flush()
+            html += _render_blocks([b])
+    flush()
+    return html
+
+
+def _sec_shell(num, title, inner):
+    return (f'<div class="sds-sec"><b>{num}.</b>{_esc(title)}</div>'
+            f'<div class="sds-body">{inner}</div>')
+
+
+def _sec1(d, c, sec):
+    # product identifier from the source (line after the 1.1 heading)
+    prod = ""
+    lines = sec["lines"]
+    for i, ln in enumerate(lines):
+        if _re.match(r"^\s*1\.1\.", ln):
+            for nx in lines[i + 1:]:
+                if nx.strip():
+                    prod = _sq(nx)
+                    break
+            break
+    prod = prod or _esc(f'{d["title_a"]} {d["title_b"].replace(" · ", " ")}')
+    inner = '<p class="subh">1.1. Product identifier</p>'
+    inner += f'<p class="val">{prod}</p>'
+    inner += ('<p class="subh">1.2. Relevant identified uses of the substance or '
+              'mixture and uses advised against</p>')
+    inner += f'<p class="val">{_esc(c["use"])}</p>'
+    inner += '<p class="subh">1.3. Details of the supplier of the safety data sheet</p>'
+    for lab, vals in SUPPLIER_FIELDS:
+        inner += f'<p class="lab">{_esc(lab)}</p>'
+        for v in vals:
+            inner += f'<p class="val">{_esc(v)}</p>'
+    inner += '<p class="subh">1.4. Emergency telephone number</p>'
+    emer = c["emergency"]
+    if "Tel.:" in emer:
+        place, tel = emer.split("Tel.:", 1)
+        inner += f'<p class="val">{_esc(place.strip())}</p>'
+        inner += f'<p class="val">Tel.: {_esc(tel.strip())}</p>'
+    else:
+        inner += f'<p class="val">{_esc(emer)}</p>'
+    return _sec_shell(sec["num"], sec["title"], inner)
+
+
+def _sec2(d, c, sec):
+    inner = '<p class="subh">2.1. Classification of the substance or mixture</p>'
+    inner += '<p class="pv">Classification according to Regulation (EC) No 1272/2008 (CLP):</p>'
+    if sec.get("class_table"):
+        body = "".join(
+            f'<tr><td>{_esc(cl)}</td><td class="c">{code}</td><td>{_esc(st)}.</td></tr>'
+            for cl, code, st in sec["class_table"])
+        inner += ('<table class="clp"><tr><th>Hazard class / category</th><th>Code</th>'
+                  f'<th>Hazard statement</th></tr>{body}</table>')
+    # rest of the section from the 2.2 marker onward
+    rest = []
+    for i, ln in enumerate(sec["lines"]):
+        if _re.match(r"^\s*2\.2\.", ln):
+            rest = sec["lines"][i:]
+            break
+    pics = "".join(f'<img src="{GHS[p]}">' for p in c["pictos"])
+
+    def hook(label):
+        if label.lower().startswith("hazard pictograms"):
+            return f'<div class="ghsrow">{pics}</div>'
+        return ""
+
+    inner += _render_blocks(_blocks(rest), after_label_hook=hook)
+    return _sec_shell(sec["num"], sec["title"], inner)
+
+
+def _sec3(d, sec, slug):
+    comp, foots = COMP_BY_SLUG[slug]
+    # per customer feedback the sub-heading is numbered 3.1.
+    inner = '<p class="subh">3.1. Mixtures</p>'
+    inner += '<p class="lab">Chemical characterization</p>'
+    body = "".join(
+        f'<tr><td class="n">{name}</td><td>{ec}</td><td>{cas}</td>'
+        f'<td>{reach}</td><td>{content}</td><td>{cls}</td></tr>'
+        for name, ec, cas, reach, content, cls in comp)
+    inner += ('<table class="comp"><tr><th>Substance</th><th>EC No.</th><th>CAS No.</th>'
+              '<th>REACH Reg. No.</th><th>Content (%)</th><th>Classification (CLP)¹</th></tr>'
+              f'{body}</table>')
+    for f in foots:
+        inner += f'<p class="fnote">{f}</p>'
+    return _sec_shell(sec["num"], sec["title"], inner)
+
+
+def _sec9(sec):
+    lines = sec["lines"]
+    kv, head_lines, tail_lines = [], [], []
+    seen_kv = False
+    for raw in lines:
+        s = raw.strip()
+        if not s:
+            continue
+        indent = len(raw) - len(raw.lstrip())
+        m = _re.match(r"^\s*[a-z]\)\s+(.+?):\s*(.*)$", raw)
+        if m:
+            kv.append([_sq(m.group(1)), _re.sub(r"\s{2,}", " ", m.group(2).strip())])
+            seen_kv = True
+        elif seen_kv and indent >= 20 and kv and not tail_lines:
+            kv[-1][1] = (kv[-1][1] + " " + _re.sub(r"\s{2,}", " ", s)).strip()
+        elif not seen_kv:
+            head_lines.append(raw)
+        else:
+            tail_lines.append(raw)
+    inner = _render_blocks(_blocks(head_lines))
+    if kv:
+        body = "".join(f'<tr><td class="k">{k}</td><td>{_esc(v) if v else "—"}</td></tr>'
+                       for k, v in kv)
+        inner += f'<table class="kv">{body}</table>'
+    inner += _render_blocks(_blocks(tail_lines))
+    return _sec_shell(sec["num"], sec["title"], inner)
+
+
+def _sec11(sec):
+    return _sec_shell(sec["num"], sec["title"], _tox_table(_blocks(sec["lines"])))
 
 
 def render_silicate(slug):
@@ -571,7 +857,7 @@ def render_silicate(slug):
     body = B.css() + EXTRA_CSS
     use_short = c["use"].replace("“", '"').replace("”", '"')
     body += head(d["title_a"] + " ", d["title_b"], use_short[:150],
-                 kind="Safety data sheet")
+                 kind="Safety data sheet", show_drop=False)
     body += B.pagelogo()
 
     # ---- cover ----
@@ -589,7 +875,7 @@ def render_silicate(slug):
              f'<p class="r"><b>Identified use</b>{_esc(use_short)}</p></div>'
              '<div class="cover-card em"><h4>Manufacturer &amp; emergency</h4>'
              '<p class="r"><b>Manufacturer</b>UAB Lateral Repairs<br>Paberžių g. 5, Tauragė, LT-72328, Lithuania</p>'
-             f'<p class="r"><b>Contact</b>{_esc(c["email"])} · {_esc(c["phone"])}</p>'
+             f'<p class="r"><b>Contact</b>info@lateralrepairs.com · {_esc(c["phone"])}</p>'
              f'<p class="r"><b>Emergency</b>{_esc(c["emergency"])}</p></div></div>')
 
     m = c["meta"]
@@ -602,11 +888,23 @@ def render_silicate(slug):
     body += '<div class="pagebreak"></div>'
 
     # ---- 16 sections ----
-    comp = COMP_BY_SLUG.get(slug)
     for sec in d["sections"]:
-        body += render_section(sec, comp=comp)
+        n = sec["num"]
+        if n == 1:
+            body += _sec1(d, c, sec)
+        elif n == 2:
+            body += _sec2(d, c, sec)
+        elif n == 3:
+            body += _sec3(d, sec, slug)
+        elif n == 9:
+            body += _sec9(sec)
+        elif n == 11:
+            body += _sec11(sec)
+        else:
+            body += _sec_shell(n, sec["title"], _render_blocks(_blocks(sec["lines"])))
 
-    body += f'<div class="foot"><div>Safety data sheet · Version {_esc(m["version"] or "1.0 / EN")} · Issued {_esc(m["issue"] or "01/06/2020")}</div></div>'
+    body += (f'<div class="foot"><div>Safety data sheet · Version '
+             f'{_esc(m["version"] or "1.0 / EN")} · Issued {_esc(m["issue"] or "01/06/2020")}</div></div>')
     body += B.contactbar()
     return body
 
