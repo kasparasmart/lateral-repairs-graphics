@@ -62,14 +62,14 @@ EXTRA_CSS = f"""
   table.kv td.k {{ background:#f1eff3; font-weight:600; width:38%; color:{B.CHAR}; }}
   .hazbox {{ display:flex; gap:14px; align-items:center; background:#fdeef5;
     border:1px solid {B.PINK}; border-radius:8px; padding:10px 14px; margin-top:8px; }}
-  .hazbox img {{ height:62px; width:auto; }}
+  .hazbox img {{ height:62px; width:62px; }}
   .sds-body p.lab {{ font-weight:700; color:#1a1820; font-size:8.2pt; margin:6px 0 1px; }}
   .sds-body p.val {{ margin:0 0 2.5px 10px; font-size:8pt; color:#333; line-height:1.42; }}
   .sds-body p.val.vin {{ margin-left:26px; }}
   .sds-body p.pv {{ margin:0 0 3px; font-size:8pt; color:#333; line-height:1.45; }}
   .sds-body b.code {{ color:{B.PINK}; font-weight:700; }}
   .ghsrow {{ margin:3px 0 5px 10px; }}
-  .ghsrow img {{ height:1.35cm; width:auto; margin-right:9px; vertical-align:middle; }}
+  .ghsrow img {{ height:1.35cm; width:1.35cm; margin-right:9px; vertical-align:middle; }}
   table.tox {{ width:100%; border-collapse:collapse; margin:4px 0 7px; }}
   table.tox td {{ border:1px solid #d8d6dc; padding:3px 7px; font-size:8pt; vertical-align:top; }}
   table.tox td.e {{ width:36%; font-weight:600; color:{B.CHAR}; background:#f4f2f6; }}
@@ -78,7 +78,7 @@ EXTRA_CSS = f"""
   /* SDS cover page */
   .cover-haz {{ display:flex; gap:16px; align-items:center; background:{B.CHAR};
     border-radius:12px; padding:16px 20px; margin-top:16px; }}
-  .cover-haz img {{ height:78px; width:auto; background:#fff; border-radius:8px; padding:4px; }}
+  .cover-haz img {{ height:78px; width:78px; background:#fff; border-radius:8px; padding:4px; }}
   .cover-haz .sig {{ color:{B.PINK}; font-weight:700; font-size:13pt; letter-spacing:.5px; }}
   .cover-haz .hs {{ color:#fff; font-size:9pt; line-height:1.5; margin-top:5px; }}
   .cover-haz .hs b {{ color:{B.PINK}; }}
