@@ -831,11 +831,22 @@ def _tox_table(blocks):
         elif t == "head":
             flush()
             html += f'<p class="subh">{_esc(b["label"])}</p>'
-            for v in b["vals"]:
-                html += f'<p class="val">{_esc(v)}</p>'
+            if b["vals"]:
+                html += f'<p class="val">{_esc(" ".join(b["vals"]))}</p>'
         else:
-            flush()
-            html += _render_blocks([b])
+            # a species/endpoint data line whose source used a single-space
+            # colon escaped the two-column layout (e.g. W01 §11.6 "Rats
+            # (inhalation): NOAEL = …") — fold it back in as a table row so it
+            # matches the aligned tables (§11.5, §11.8)
+            first = b["vals"][0] if b.get("vals") else ""
+            m = _re.match(r"^([A-Z][^:]{1,40}?):\s+(\S.*)$", first)
+            if m and _DATA_START.match(m.group(2)):
+                cell = "<br>".join([_esc(m.group(2))] + [_esc(v) for v in b["vals"][1:]])
+                rows.append('<tr><td class="e" style="padding-left:16px;'
+                            f'font-weight:400">{_esc(m.group(1))}:</td><td>{cell}</td></tr>')
+            else:
+                flush()
+                html += _render_blocks([b])
     flush()
     return html
 
