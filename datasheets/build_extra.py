@@ -546,6 +546,68 @@ def _is_section_label(label):
     return len(label) <= 40 and not _SECTION_LABEL_KW.search(label)
 
 
+def _norm(s):
+    """normalise a heading for matching: lower-case, single spaces, no trailing colon"""
+    return _re.sub(r"\s+", " ", s.strip()).rstrip(":").strip().lower()
+
+
+# Section sub-headings that must always render as bold labels (black), whether
+# or not the source gave them a colon and regardless of length.  The EU CLP SDS
+# format has a fixed vocabulary of these; listing them keeps the layout uniform
+# and avoids over-bolding data descriptors.
+_HEADINGS = {_norm(x) for x in [
+    "Hazard determining component(s) for labelling",
+    "Further information on storage conditions",
+    "Occupational exposure controls", "Environmental exposure controls",
+    "Unsuitable materials",
+    # §11 endpoints
+    "Irritation and corrosivity", "Sensitizing effects",
+    "Carcinogenic/mutagenic/toxic effects for reproduction",
+    "STOT– single exposure", "STOT single exposure", "STOT – single exposure",
+    "STOT – repeated exposure", "STOT repeated exposure",
+    "Aspiration hazard",
+    "Acute toxicity", "Acute toxicity – oral",
+    "Acute toxicity – inhalation (aerosol)", "Acute toxicity – dermal",
+    "Skin corrosion/Skin irritation", "Eye damage/Irritation",
+    "Skin sensitisation", "Respiratory sensitisation", "Effects on fertility",
+    # §12 ecotox
+    "Short-term toxicity to fish", "Long-term toxicity to fish",
+    "Short-term toxicity to aquatic invertebrates",
+    "Long-term toxicity to aquatic invertebrates",
+    "Toxicity to aquatic algae and cyanobacteria",
+    "Toxicity to aquatic plants other than algae",
+    "Toxicity to microorganisms", "Toxicity to other aquatic organisms",
+    "Toxicity to soil macroorganisms except arthropods",
+    "Toxicity to terrestrial arthropods", "Toxicity to terrestrial plants",
+    "Toxicity to soil microorganisms", "Toxicity to other above-ground organisms",
+    "Phototransformation in air", "Phototransformation in water and soil",
+    "Hydrolysis", "Biodegradation in water",
+    "Biodegradation in water and sediment", "Biodegradation in soil",
+    "Bioaccumulation – aquatic/sediment", "Terrestrial bioaccumulation",
+    "Adsorption/desorption", "Volatilisation",
+    "Conclusion for the P criterion", "Conclusion for the B criterion",
+    "Conclusion for the T criterion", "Secondary poisoning",
+    "Hazardous to the aquatic environment (acute)",
+    "Hazardous to the aquatic environment (chronic)",
+    "Further information",
+    # §15 (silicate)
+    "EU regulatory information", "Additional information",
+    "National regulatory information",
+    # §16 glossary
+    "H-Phrases", "P-Phrases", "Hazard classes",
+]}
+
+
+def _heading_split(s):
+    """If ``s`` is (or begins with) a known heading, return (heading, value)."""
+    if _norm(s) in _HEADINGS:
+        return (s.strip().rstrip(":").strip(), "")
+    m = _re.match(r"^(.{3,70}?):\s+(\S.*)$", s.strip())
+    if m and _norm(m.group(1)) in _HEADINGS:
+        return (m.group(1).strip(), m.group(2).strip())
+    return None
+
+
 def _add_val(b, s):
     """append a value line; join to the previous when it is a sentence wrap"""
     s = _re.sub(r"\s{2,}", " ", s.strip())
@@ -572,6 +634,24 @@ def _blocks(lines):
         # continuation lines in the value column
         if cur is not None and indent >= 20:
             _add_val(cur, s)
+            continue
+
+        # a known section heading always renders bold (on its own line),
+        # even when the source ran it together with the following value
+        if indent <= 10:
+            hs = _heading_split(s)
+            if hs:
+                cur = {"t": "label", "label": hs[0] + ":", "vals": []}
+                blocks.append(cur)
+                if hs[1]:
+                    _add_val(cur, hs[1])
+                continue
+
+        # a statement code alone on its line — its text follows on the next
+        # (indented) lines, e.g. "P303+P361+P353" then "IF ON SKIN …"
+        if _re.match(r"^[HP]\d{3}(?:\s*\+\s*[HP]\d{3})*$", s):
+            cur = {"t": "stmt", "label": _re.sub(r"\s*\+\s*", "+", s), "vals": []}
+            blocks.append(cur)
             continue
 
         # H###/P### statement lines
@@ -623,7 +703,17 @@ def _blocks(lines):
         m = _COL_LABEL.match(s)
         if m and indent <= 14:
             label, val = m.group(1).strip(), m.group(2).strip()
-            if indent <= 2 and _is_section_label(label):
+            # a label that begins lower-case is a wrapped continuation of the
+            # previous line's lead (e.g. "Waste disposal number of waste" +
+            # "from residues/unused products:") — rejoin them into one label
+            forced = False
+            if (label[:1].islower() and blocks and blocks[-1]["t"] == "para"
+                    and len(blocks[-1]["vals"]) == 1
+                    and not blocks[-1]["vals"][-1].rstrip()
+                            .endswith((".", ";", ":", "!", "?"))):
+                label = blocks.pop()["vals"][0].rstrip() + " " + label
+                forced = True
+            if forced or (indent <= 2 and _is_section_label(label)):
                 cur = {"t": "label", "label": label + ":", "vals": []}
                 blocks.append(cur)
                 _add_val(cur, val)
@@ -669,6 +759,15 @@ def _blocks(lines):
             _add_val(cur, m.group(2))
             continue
 
+        # a flush-left line that continues the previous field's value (the
+        # source wrapped it back to column 0) — rejoin rather than scatter it
+        if (blocks and blocks[-1]["t"] in ("label", "head", "sub") and blocks[-1]["vals"]
+                and s[:1].islower()
+                and not blocks[-1]["vals"][-1].rstrip().endswith((".", ";", ":", "!", "?"))):
+            _add_val(blocks[-1], s)
+            cur = blocks[-1]
+            continue
+
         # plain paragraph line
         if cur is not None and cur["t"] == "para":
             if cur["raw"] >= 85:
@@ -688,19 +787,22 @@ def _render_blocks(blocks, after_label_hook=None):
         t = b["t"]
         if t == "head":
             html += f'<p class="subh">{_esc(b["label"])}</p>'
-            for v in b["vals"]:
-                html += f'<p class="val">{_esc(v)}</p>'
+            if b["vals"]:
+                html += f'<p class="val">{_esc(" ".join(b["vals"]))}</p>'
         elif t == "label":
             html += f'<p class="lab">{_esc(b["label"])}</p>'
             if after_label_hook:
                 html += after_label_hook(b["label"])
-            for v in b["vals"]:
-                html += f'<p class="val">{_esc(v)}</p>'
+            # a field value is one flowing paragraph — join wrapped lines so the
+            # text is not scattered across several indented fragments
+            if b["vals"]:
+                html += f'<p class="val">{_esc(" ".join(b["vals"]))}</p>'
         elif t == "sub":
-            joined = (b["label"] + " " + b["vals"][0]) if b["vals"] else b["label"]
-            html += f'<p class="val">{_esc(joined)}</p>'
-            for v in b["vals"][1:]:
-                html += f'<p class="val vin">{_esc(v)}</p>'
+            # a data descriptor line ("… (inhalation): DNEL = 0.1 mg/m³") renders
+            # flush-left as a paragraph so lists such as the DNEL/PNEC block are
+            # uniformly left-aligned rather than alternating indent
+            joined = (b["label"] + " " + " ".join(b["vals"])) if b["vals"] else b["label"]
+            html += f'<p class="pv">{_esc(joined)}</p>'
         elif t == "stmt":
             txt = " ".join(b["vals"])
             html += f'<p class="val"><b class="code">{b["label"]}</b> {_esc(txt)}</p>'
@@ -855,8 +957,245 @@ def _sec9(sec):
     return _sec_shell(sec["num"], sec["title"], inner)
 
 
-def _sec11(sec):
-    return _sec_shell(sec["num"], sec["title"], _tox_table(_blocks(sec["lines"])))
+_SILICATE_SUBST = ("Silicic acid, sodium salt "
+                   "(Molar ratio Na₂O : SiO₂ = 1 : &gt; 1.6 – &lt; 2.6) · CAS 1344-09-8")
+
+# W01 embedded ingredient tables (§11) — reconstructed verbatim from the source
+_ING_IRRIT = (
+    '<table class="clp"><tr><th>Ingredient name</th><th>Result</th><th>Species</th>'
+    '<th>Score</th><th>Exposure</th><th>Test</th></tr>'
+    '<tr><td>Triisobutyl phosphate (CAS: 126-71-6)</td><td>Skin erythema/eschar</td>'
+    '<td>Rabbit</td><td>0.67</td><td>–</td>'
+    '<td>OECD 404 Acute Dermal Irritation/Corrosion</td></tr></table>')
+_ING_SENS = (
+    '<table class="clp"><tr><th>Ingredient name</th><th>Route of exposure</th>'
+    '<th>Species</th><th>Result</th><th>Test description</th></tr>'
+    '<tr><td>Triisobutyl phosphate (CAS: 126-71-6)</td><td>Skin</td>'
+    '<td>Guinea pig</td><td>Sensitizing</td><td>OECD 406 Skin Sens.</td></tr></table>')
+
+
+def _sec11_silicate(sec):
+    inner = '<p class="subh">11.1. Information on toxicological effects</p>'
+    inner += '<p class="lab">Acute toxicity</p>'
+    inner += ('<p class="val">Based on available data, the classification criteria '
+              'are not met.</p>')
+    inner += f'<p class="val">{_SILICATE_SUBST}</p>'
+    inner += ('<table class="clp"><tr><th>Exposure route</th><th>Dose</th>'
+              '<th>Species</th><th>Source</th></tr>'
+              '<tr><td>oral</td><td>LD50 &gt; 2000 mg/kg</td><td>Rat</td><td>IUCLID</td></tr>'
+              '<tr><td>dermal</td><td>LD50 &gt; 5000 mg/kg</td><td>Rat</td><td>IUCLID</td></tr>'
+              '</table>')
+    ncm = "Based on available data, the classification criteria are not met."
+    endpoints = [
+        ("Irritation and corrosivity", "Causes skin irritation.<br>Causes serious eye damage."),
+        ("Sensitizing effects", ncm),
+        ("Carcinogenic/mutagenic/toxic effects for reproduction", ncm),
+        ("STOT – single exposure", ncm),
+        ("STOT – repeated exposure", ncm),
+        ("Aspiration hazard", ncm),
+    ]
+    inner += '<table class="tox">' + "".join(
+        f'<tr><td class="e">{_esc(k)}</td><td>{v}</td></tr>' for k, v in endpoints
+    ) + "</table>"
+    return _sec_shell(sec["num"], sec["title"], inner)
+
+
+def _sec11_mdi(sec, slug):
+    lines = sec["lines"]
+    # replace the embedded "Ingredient name" mini-tables with proper HTML tables
+    segs, cur, tables = [], [], iter([_ING_IRRIT, _ING_SENS])
+    i = 0
+    while i < len(lines):
+        s = lines[i].strip()
+        if s.startswith("Ingredient name"):
+            segs.append(("text", cur)); cur = []
+            j = i + 1
+            while j < len(lines):
+                sj = lines[j].strip()
+                if not sj:
+                    j += 1; continue
+                if _heading_split(sj) or (_HEAD.match(sj) and _re.match(r"^\d", sj)):
+                    break
+                j += 1
+            try:
+                segs.append(("html", next(tables)))
+            except StopIteration:
+                pass
+            i = j
+            continue
+        cur.append(lines[i]); i += 1
+    segs.append(("text", cur))
+    html = ""
+    for kind, payload in segs:
+        if kind == "html":
+            html += payload
+        elif any(x.strip() for x in payload):
+            html += _tox_table(_blocks(payload))
+    return _sec_shell(sec["num"], sec["title"], html)
+
+
+def _sec11(sec, slug):
+    if slug in ("summer", "waterglass"):
+        return _sec11_silicate(sec)
+    return _sec11_mdi(sec, slug)
+
+
+_ECO_RECORD = _re.compile(
+    r"(mg/l|mg/kg|mg/m|g/m|µg/l|µmol|ppm|\(\s*\d|OECD\s+Guideline|OECD\s+\d|"
+    r"DIN\s|EN\s?\d|ISO\s?\d|Method:|Half-life|Target organs|CAS[:\s]?\s*\d|"
+    r"Guideline\s+\d|BCF\b|DT50)", _re.I)
+
+
+def _render_eco(lines):
+    """Ecotoxicology (§12) for the MDI resins: bold headings, one flowing
+    paragraph per prose value, and measurement records kept line-per-line."""
+    html, buf = "", []
+
+    def flush():
+        nonlocal html, buf
+        if buf:
+            html += f'<p class="pv">{_esc(" ".join(buf))}</p>'
+            buf = []
+
+    for raw in lines:
+        s = raw.strip()
+        if not s:
+            continue
+        indent = len(raw) - len(raw.lstrip())
+        if _HEAD.match(s) and indent <= 6 and _re.match(r"^\d", s):
+            flush()
+            m = _HEAD.match(s)
+            html += f'<p class="subh">{_esc((m.group(1) + " " + m.group(2)).strip())}</p>'
+            continue
+        hs = _heading_split(s) if indent <= 10 else None
+        if hs:
+            flush()
+            html += f'<p class="lab">{_esc(hs[0])}</p>'
+            if hs[1]:
+                buf = [hs[1]]
+            continue
+        s = _re.sub(r"\s{2,}", " ", s)
+        # a measurement record is a short stand-alone data line; a long
+        # sentence that merely mentions a unit (e.g. "…10000 mg/l, …") is prose
+        if _ECO_RECORD.search(s) and len(s) <= 90:
+            flush()
+            html += f'<p class="val">{_esc(s)}</p>'
+            continue
+        buf.append(s)
+    flush()
+    return html
+
+
+def _sec12_silicate(sec):
+    lines = sec["lines"]
+    inner = ('<p class="pv">The data refer to the product with the given composition '
+             'and were used cross-referenced.</p>')
+    inner += '<p class="subh">12.1. Toxicity</p>'
+    inner += '<p class="val">The product has not been tested.</p>'
+    inner += f'<p class="val">{_SILICATE_SUBST}</p>'
+    inner += ('<table class="clp"><tr><th>Aquatic toxicity</th><th>Dose</th>'
+              '<th>Time</th><th>Species</th><th>Source</th></tr>'
+              '<tr><td>Acute fish toxicity</td><td>LC50 1108 mg/l</td><td>96 h</td>'
+              '<td>Brachydanio rerio (zebrafish)</td><td>IUCLID</td></tr>'
+              '<tr><td>Acute algae toxicity</td><td>ErC50 207 mg/l</td><td>72 h</td>'
+              '<td>Scenedesmus subspicatus</td><td>IUCLID</td></tr>'
+              '<tr><td>Acute crustacea toxicity</td><td>EC50 1700 mg/l</td><td>48 h</td>'
+              '<td>Daphnia magna (big water flea)</td><td>IUCLID</td></tr></table>')
+    # 12.2 onward (skip the blank separator line after the table)
+    rest = []
+    started = False
+    for ln in lines:
+        if _re.match(r"^\s*12\.2\.", ln):
+            started = True
+        if started:
+            rest.append(ln)
+    inner += _render_blocks(_blocks(rest))
+    return _sec_shell(sec["num"], sec["title"], inner)
+
+
+def _sec12(sec, slug):
+    if slug in ("summer", "waterglass"):
+        return _sec12_silicate(sec)
+    return _sec_shell(sec["num"], sec["title"], _render_eco(sec["lines"]))
+
+
+_ABBR_RE = _re.compile(r"^([^:]{1,16}):\s+(\S.*)$")
+_CODE_RE = _re.compile(r"^([HP]\d{3}(?:\s*\+\s*[HP]\d{3})*)\s+(\S.*)$")
+
+
+def _sec16(sec):
+    """Section 16: clean two-column glossary tables for the abbreviations and
+    the full text of H/P phrases and hazard classes."""
+    lines = sec["lines"]
+    html = ""
+    state = None            # None | "abbr" | "code"
+    abbr_rows, code_rows = [], []
+
+    def flush_abbr():
+        nonlocal html, abbr_rows
+        if abbr_rows:
+            html += '<table class="kv">' + "".join(
+                f'<tr><td class="k">{_esc(a)}</td><td>{_esc(t)}</td></tr>'
+                for a, t in abbr_rows) + "</table>"
+            abbr_rows = []
+
+    def flush_code():
+        nonlocal html, code_rows
+        if code_rows:
+            html += '<table class="kv">' + "".join(
+                f'<tr><td class="k">{_esc(a)}</td><td>{_esc(t)}</td></tr>'
+                for a, t in code_rows) + "</table>"
+            code_rows = []
+
+    buf = []
+
+    def flush_buf():
+        nonlocal html, buf
+        if buf:
+            html += f'<p class="pv">{_esc(" ".join(buf))}</p>'
+            buf = []
+
+    for raw in lines:
+        s = raw.strip()
+        indent = len(raw) - len(raw.lstrip())
+        if not s:
+            continue
+        # numbered sub-heading
+        m = _HEAD.match(s)
+        if m and _re.match(r"^\d", s) and indent <= 6:
+            flush_buf(); flush_abbr(); flush_code()
+            title = (m.group(1) + " " + m.group(2)).strip()
+            html += f'<p class="subh">{_esc(title)}</p>'
+            state = "abbr" if s.startswith("16.2") else None
+            continue
+        # H/P-phrase and hazard-class group headers
+        if _norm(s) in {"h-phrases", "p-phrases", "hazard classes"}:
+            flush_buf(); flush_abbr(); flush_code()
+            html += f'<p class="lab">{_esc(s)}</p>'
+            state = "code"
+            continue
+        if state == "abbr":
+            am = _ABBR_RE.match(s)
+            if am:
+                abbr_rows.append((am.group(1).strip(), am.group(2).strip()))
+                continue
+        if state == "code":
+            cm = _CODE_RE.match(s)
+            if cm:
+                code_rows.append((cm.group(1).replace(" ", ""), cm.group(2).strip()))
+                continue
+            gm = _GAP_SPLIT.match(s)
+            if gm and indent <= 2:
+                code_rows.append((gm.group(1).strip(), gm.group(2).strip()))
+                continue
+            if code_rows and indent >= 8:      # wrapped continuation of last text
+                a, t = code_rows[-1]
+                code_rows[-1] = (a, (t + " " + s).strip())
+                continue
+        # plain prose (intro, "16.1" value, etc.)
+        buf.append(_re.sub(r"\s{2,}", " ", s))
+    flush_buf(); flush_abbr(); flush_code()
+    return _sec_shell(sec["num"], sec["title"], html)
 
 
 def render_silicate(slug):
@@ -907,7 +1246,11 @@ def render_silicate(slug):
         elif n == 9:
             body += _sec9(sec)
         elif n == 11:
-            body += _sec11(sec)
+            body += _sec11(sec, slug)
+        elif n == 12:
+            body += _sec12(sec, slug)
+        elif n == 16:
+            body += _sec16(sec)
         else:
             body += _sec_shell(n, sec["title"], _render_blocks(_blocks(sec["lines"])))
 
