@@ -40,6 +40,9 @@ EXTRA_CSS = f"""
   .illus img {{ max-width:90%; max-height:13cm; }}
   .illus figcaption {{ margin-top:12px; font-size:9pt; color:#777; }}
   .pagebreak {{ break-before:page; }}
+  .bl {{ display:block; position:relative; padding-left:13px; font-size:8pt; color:#333;
+    line-height:1.4; margin:1px 0; }}
+  .bl:before {{ content:"•"; color:{B.PINK}; position:absolute; left:0; font-weight:700; }}
   /* SDS */
   .sds-sec {{ background:{B.CHAR}; color:#fff; font-weight:700; font-size:9pt;
     padding:5px 10px; margin:11px 0 0; break-after:avoid; }}
@@ -1271,10 +1274,144 @@ def render_silicate(slug):
     return body
 
 
+# --------------------------------------------------------------- Calibration hose
+CAL_SUBTITLE = ("PVC-coated polyester fabric with an ultra-flexible high-frequency overlap "
+                "welded seam — suitable for use with most resin types "
+                "(Polyester, Vinyl Ester, Epoxy).")
+
+# storage / handling text is identical across the three variants (verbatim from source)
+CAL_STORAGE = [
+    ("curing", "Avoid extremes of temperature", [
+        "Freezing may cause the coating structure to degrade locally, especially areas where the "
+        "coating is in tension or compression – at bends and edges, and immediately adjacent to seam welds.",
+        "Recommended storage temperature 5 °C – 35 °C.",
+        "Shelf life at this temperature: in excess of 1 year."]),
+    ("resin", "Recommended humidity", [
+        "Very high relative humidity (especially at high temperature such as tropical countries) "
+        "could affect the pigmentation of the hose.",
+        "Recommended storage humidity 25 % – 65 % rh.",
+        "Shelf life at 65 %, 35 °C: 1 year."]),
+    ("storage", "Avoid prolonged wet storage", [
+        "As with high humidity, the coating is more susceptible to degradation at higher "
+        "temperatures, and even further susceptible if the pH of liquid in contact is "
+        "significantly above or below 7.",
+        "Wet storage is not recommended."]),
+    ("colour", "Avoid sunlight / UV", [
+        "Prolonged exposure to ultraviolet light can affect the pigmentation of the hose."]),
+]
+CAL_FURTHER = [
+    "All hose supplied is recommended as single use only. Multiple use of the material is at customer risk.",
+    "When in use, the hose is to be supported outside the pipe.",
+    "Due to sizing requirements at manufacture, the customer must specify the intended use as "
+    "calibration hose or pre-liner.",
+]
+CAL_HANDLING = ("Ensure that the hose is not placed directly onto grit or gravel floor – sweep and "
+                "cover the floor first. Handle the hose with care. Ensure personnel are instructed "
+                "not to walk on the hose.")
+
+CAL_HOSE = {
+    "stitched_welded": {
+        "file": "LR_Calibration_Hose_Stitched_Welded.pdf",
+        "title_b": "Stitched &amp; Welded",
+        "material": "Stitched &amp; Welded HD — White",
+        "seam": "High-frequency overlap welded and stitched seam (heavy duty).",
+        "lengths": None,
+        "temp": "80 °C",
+        "pressures": [("100", "2.00"), ("200", "2.00"), ("250", "1.20"),
+                      ("300", "1.20"), ("450", "0.80"), ("600", "0.65")],
+        "version": "1", "date": "11.02.24",
+    },
+    "heat_welded": {
+        "file": "LR_Calibration_Hose_Heat_Welded_MD.pdf",
+        "title_b": "Heat Welded MD",
+        "material": "Heat Welded MD — White",
+        "seam": "Heat-welded, overlapped and taped seam (medium duty).",
+        "lengths": "Standard roll lengths 50 m, 100 m",
+        "temp": "50 °C",
+        "pressures": [("100", "1.50"), ("150", "1.00"), ("200", "0.75"), ("250", "0.60"),
+                      ("300", "0.50"), ("350", "0.45"), ("400", "0.35")],
+        "version": "001", "date": "11.02.24",
+    },
+    "welded_violet": {
+        "file": "LR_Calibration_Hose_Welded_Violet.pdf",
+        "title_b": "Welded · Violet",
+        "material": "HF LD — Violet",
+        "seam": "High-frequency overlap welded seam (light duty).",
+        "lengths": "Standard roll lengths 50 m, 100 m",
+        "temp": "50 °C",
+        "pressures": [("100", "0.80"), ("150", "0.55"), ("175", "0.45"), ("200", "0.40")],
+        "version": "001", "date": "11.02.24",
+    },
+}
+
+
+def _cal_kv(rows):
+    body = "".join(
+        f'<tr><td class="k2">{(B.ic(i) + " " if i else "")}{k}</td><td class="v">{v}</td></tr>'
+        for i, k, v in rows)
+    return f'<table class="f">{body}</table>'
+
+
+def _cal_pressure(rows):
+    diam = "".join(f'<td style="text-align:center;font-weight:600">{d}</td>' for d, _ in rows)
+    pres = "".join(f'<td style="text-align:center">{p}</td>' for _, p in rows)
+    return ('<table class="comp" style="margin-top:9px">'
+            f'<tr><th style="text-align:left;white-space:nowrap">Pipe diameter (mm)</th>{diam}</tr>'
+            '<tr><th style="text-align:left;white-space:nowrap">'
+            f'Maximum recommended pressure (Bar)</th>{pres}</tr></table>')
+
+
+def calibration_hose(key):
+    d = CAL_HOSE[key]
+    body = B.css() + EXTRA_CSS
+    body += head("Calibration Hose ", d["title_b"], CAL_SUBTITLE)
+
+    mat_rows = [
+        ("material", "Material", d["material"]),
+        ("coating", "Base fabric", "PVC-coated polyester"),
+        ("textile", "Seam", d["seam"]),
+        ("certificate", "Compatible resins", "Polyester · Vinyl Ester · Epoxy"),
+    ]
+    if d["lengths"]:
+        mat_rows.append(("length", "Standard lengths", d["lengths"]))
+    mat_rows.append(("curing", "Maximum working temperature", d["temp"]))
+
+    stor_rows = [(ic_, k, "".join(f'<div class="bl">{p}</div>' for p in ps))
+                 for ic_, k, ps in CAL_STORAGE]
+
+    body += '<div class="secttl">Material &amp; construction</div>'
+    body += _cal_kv(mat_rows)
+    body += '<div class="secttl">Maximum recommended pressure</div>'
+    body += _cal_pressure(d["pressures"])
+    body += '<div class="secttl">Recommended storage</div>'
+    body += _cal_kv(stor_rows)
+
+    further = "".join(f"<li>{n}</li>" for n in CAL_FURTHER)
+    body += ('<div class="twocard" style="margin-top:11px">'
+             '<div class="card"><h4>Recommended handling</h4>'
+             f'<p><b>Mechanical damage to be avoided.</b> {CAL_HANDLING}</p></div>'
+             '<div class="card"><h4>Further recommendations</h4>'
+             f'<ul style="margin:0;padding-left:14px">{further}</ul></div></div>')
+
+    body += ('<div class="notice" style="margin-top:11px"><h4>Notice</h4><ul>'
+             '<li>The information in this data sheet corresponds to our knowledge and experience at '
+             'present and is given without warranty; check the product’s suitability for the '
+             'intended application before use.</li>'
+             '<li>All values are guideline figures determined under laboratory conditions and can '
+             'differ on industrial job sites.</li></ul></div>')
+    body += (f'<div class="foot"><div>Version {d["version"]} · {d["date"]}</div>'
+             '<div>Issue: V2026.1 · 2026.06</div></div>')
+    body += B.contactbar()
+    return body
+
+
 def main():
     jobs = [("LR_Glassfiber_Complex_1050.pdf", glassfiber()),
             ("LR_Connection_Liners.pdf", connection()),
             ("LR_End_Cap_Glue.pdf", endcap()),
+            ("LR_Calibration_Hose_Stitched_Welded.pdf", calibration_hose("stitched_welded")),
+            ("LR_Calibration_Hose_Heat_Welded_MD.pdf", calibration_hose("heat_welded")),
+            ("LR_Calibration_Hose_Welded_Violet.pdf", calibration_hose("welded_violet")),
             ("LR_MFE7516_Vinyl_Ester_SDS.pdf", sds()),
             ("LR_Silicate_Resin_Summer_SDS.pdf", render_silicate("summer")),
             ("LR_Silicate_Resin_Winter_SDS.pdf", render_silicate("winter")),
