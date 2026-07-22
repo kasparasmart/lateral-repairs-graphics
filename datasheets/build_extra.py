@@ -64,8 +64,8 @@ EXTRA_CSS = f"""
     border:1px solid {B.PINK}; border-radius:8px; padding:10px 14px; margin-top:8px; }}
   .hazbox img {{ height:62px; width:62px; }}
   .sds-body p.lab {{ font-weight:700; color:#1a1820; font-size:8.2pt; margin:6px 0 1px; }}
-  .sds-body p.val {{ margin:0 0 2.5px 10px; font-size:8pt; color:#333; line-height:1.42; }}
-  .sds-body p.val.vin {{ margin-left:26px; }}
+  .sds-body p.val {{ margin:0 0 2.5px 0; font-size:8pt; color:#333; line-height:1.42; }}
+  .sds-body p.val.vin {{ margin-left:0; }}
   .sds-body p.pv {{ margin:0 0 3px; font-size:8pt; color:#333; line-height:1.45; }}
   .sds-body b.code {{ color:{B.PINK}; font-weight:700; }}
   .ghsrow {{ margin:3px 0 5px 10px; }}
