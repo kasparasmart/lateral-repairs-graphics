@@ -1335,11 +1335,13 @@ CAL_HOSE = {
     "welded_violet": {
         "file": "LR_Calibration_Hose_Welded_Violet.pdf",
         "title_b": "Welded · Violet",
-        "material": "HF LD — Violet",
+        "material": "Welded HF LD — Violet",
         "seam": "High-frequency overlap welded seam (light duty).",
         "lengths": "Standard roll lengths 50 m, 100 m",
         "temp": "50 °C",
-        "pressures": [("100", "0.80"), ("150", "0.55"), ("175", "0.45"), ("200", "0.40")],
+        "pressures": [("50", "0.80"), ("70", "0.68"), ("100", "0.55"), ("125", "0.51"),
+                      ("150", "0.47"), ("200", "0.45"), ("225", "0.44"), ("250", "0.42"),
+                      ("300", "0.40")],
         "version": "001", "date": "11.02.24",
     },
 }
