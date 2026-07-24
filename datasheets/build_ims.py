@@ -276,13 +276,18 @@ def render(p):
     coating_weight = fmt_weight(p, "Weight of coating")
     if p["slug"] == "core":
         coating_weight = "300* g/m²"
-    # the current PRO range is 4.0 mm and 5.5 mm; the 4.5 mm sheet is updated to
-    # 5.5 mm to match the manufacturer's Liners_TDS data.
+    # the current PRO range is labelled 4.5 mm and 5.5 mm; the 4.5 mm sheet is
+    # updated to 5.5 mm to match the manufacturer's Liners_TDS data.
     if p["slug"] == "pro-45":
         p["variant"] = "5.5 mm"
         p["product_name"] = p["product_name"].replace("4.5 mm", "5.5 mm").replace("4,5", "5,5")
         thickness = "5,50 mm / 0,22 inch"
         textile_weight = "800* g/m²"
+    # the original "4.0 mm" sheet is relabelled to "4.5 mm" (product-line name
+    # only — the measured wall thickness spec below is unchanged at 4,00 mm).
+    if p["slug"] == "pro-40":
+        p["variant"] = "4.5 mm"
+        p["product_name"] = p["product_name"].replace("4.0 mm", "4.5 mm").replace("4,0", "4,5")
 
     diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "").split("\n")[0]
     length = next((v for k, v in p["supply"] if k == "Liner lengths"), "").split("\n")[0]
@@ -354,7 +359,7 @@ def main():
     from pypdf import PdfWriter
     files = []
     for p in load_all():
-        variant = "5.5 mm" if p["slug"] == "pro-45" else p["variant"]
+        variant = {"pro-45": "5.5 mm", "pro-40": "4.5 mm"}.get(p["slug"], p["variant"])
         name = "LR_" + p["display"].replace(" ", "_")
         if variant:
             name += "_" + variant.replace(" ", "").replace(".", "")
@@ -363,7 +368,7 @@ def main():
         files.append(path)
         print("wrote", name + ".pdf")
 
-    order = ["PRO_40mm", "PRO_55mm", "FLEX", "CORE", "FORCE", "FORCE_RF", "FORCE_UV"]
+    order = ["PRO_45mm", "PRO_55mm", "FLEX", "CORE", "FORCE", "FORCE_RF", "FORCE_UV"]
     files.sort(key=lambda f: next((i for i, k in enumerate(order) if k in f), 99))
     w = PdfWriter()
     for f in files:
