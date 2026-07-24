@@ -276,6 +276,7 @@ def render(p):
     coating_weight = fmt_weight(p, "Weight of coating")
     if p["slug"] == "core":
         coating_weight = "300* g/m²"
+        thickness = "4,50* mm / 0,18* inch"
     # the current PRO range is labelled 4.5 mm and 5.5 mm; the 4.5 mm sheet is
     # updated to 5.5 mm to match the manufacturer's Liners_TDS data.
     if p["slug"] == "pro-45":
@@ -283,11 +284,15 @@ def render(p):
         p["product_name"] = p["product_name"].replace("4.5 mm", "5.5 mm").replace("4,5", "5,5")
         thickness = "5,50 mm / 0,22 inch"
         textile_weight = "800* g/m²"
-    # the original "4.0 mm" sheet is relabelled to "4.5 mm" (product-line name
-    # only — the measured wall thickness spec below is unchanged at 4,00 mm).
+    # the original "4.0 mm" sheet is relabelled to "4.5 mm"; per reviewer
+    # correction (Vestina Lukosaityte) the wall thickness is corrected to
+    # 4,50 mm / 0,18 inch to match.
     if p["slug"] == "pro-40":
         p["variant"] = "4.5 mm"
         p["product_name"] = p["product_name"].replace("4.0 mm", "4.5 mm").replace("4,0", "4,5")
+        thickness = "4,50* mm / 0,18* inch"
+    if p["slug"] == "flex":
+        thickness = "3,50* mm / 0,14* inch"
 
     diam = next((v for k, v in p["supply"] if k == "Pipe diameter"), "").split("\n")[0]
     length = next((v for k, v in p["supply"] if k == "Liner lengths"), "").split("\n")[0]
