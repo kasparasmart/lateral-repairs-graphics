@@ -1275,9 +1275,8 @@ def render_silicate(slug):
 
 
 # --------------------------------------------------------------- Calibration hose
-CAL_SUBTITLE = ("PVC-coated polyester fabric with an ultra-flexible high-frequency overlap "
-                "welded seam — suitable for use with most resin types "
-                "(Polyester, Vinyl Ester, Epoxy).")
+CAL_SUBTITLE_TPL = ("PVC-coated polyester fabric with an ultra-flexible, {subseam} — "
+                    "suitable for use with most resin types (UV Vinyl Ester, Silicate, Epoxy).")
 
 # storage / handling text is identical across the three variants (verbatim from source)
 CAL_STORAGE = [
@@ -1314,31 +1313,46 @@ CAL_HOSE = {
         "file": "LR_Calibration_Hose_Stitched_Welded.pdf",
         "title_b": "Stitched &amp; Welded",
         "material": "Stitched &amp; Welded HD — Transparent",
-        "seam": "High-frequency overlap welded and stitched seam (heavy duty).",
-        "lengths": "Standard roll lengths 50 m, 100 m",
+        "subseam": "heat-welded, overlapped and stitched seam",
+        "seam": "Heat-welded, overlapped and stitched seam (heavy duty).",
+        "lengths": "50 m, 100 m",
         "temp": "80 °C",
-        "pressures": [("100", "2.00"), ("125", "2.00"), ("150", "2.00"), ("200", "2.00"),
-                      ("225", "1.60"), ("250", "1.20"), ("300", "1.20")],
+        "pressures": [("100", "1.70"), ("125", "1.60"), ("150", "1.40"), ("200", "1.20"),
+                      ("225", "1.00"), ("250", "0.80"), ("300", "0.60")],
+        "version": "1", "date": "11.02.24",
+    },
+    "stitched_welded_orange": {
+        "file": "LR_Calibration_Hose_Stitched_Welded_Orange.pdf",
+        "title_b": "Stitched &amp; Welded",
+        "material": "Stitched &amp; Welded HD — Orange",
+        "subseam": "heat-welded, overlapped and stitched seam",
+        "seam": "Heat-welded, overlapped and stitched seam (heavy duty).",
+        "lengths": "50 m, 100 m",
+        "temp": "80 °C",
+        "pressures": [("100", "1.70"), ("125", "1.60"), ("150", "1.40"), ("200", "1.20"),
+                      ("225", "1.00"), ("250", "0.80"), ("300", "0.60")],
         "version": "1", "date": "11.02.24",
     },
     "heat_welded": {
         "file": "LR_Calibration_Hose_Heat_Welded_MD.pdf",
         "title_b": "Welded",
-        "material": "Welded MD — Transparent",
-        "seam": "Heat-welded, overlapped and taped seam (medium duty).",
-        "lengths": "Standard roll lengths 50 m, 100 m",
+        "material": "Welded LD — Transparent",
+        "subseam": "heat-welded, overlapped and taped seam",
+        "seam": "Heat-welded, overlapped and taped seam (light duty).",
+        "lengths": "50 m, 100 m",
         "temp": "50 °C",
-        "pressures": [("50", "2.00"), ("70", "1.80"), ("100", "1.50"), ("125", "1.25"),
-                      ("150", "1.00"), ("200", "0.75"), ("225", "0.68"), ("250", "0.60"),
-                      ("300", "0.50")],
+        "pressures": [("50", "0.80"), ("70", "0.68"), ("100", "0.55"), ("125", "0.51"),
+                      ("150", "0.47"), ("200", "0.45"), ("225", "0.44"), ("250", "0.42"),
+                      ("300", "0.40")],
         "version": "001", "date": "11.02.24",
     },
     "welded_violet": {
         "file": "LR_Calibration_Hose_Welded_Violet.pdf",
         "title_b": "Welded · Violet",
-        "material": "Welded HF LD — Violet",
-        "seam": "High-frequency overlap welded seam (light duty).",
-        "lengths": "Standard roll lengths 50 m, 100 m",
+        "material": "Welded LD — Violet",
+        "subseam": "heat-welded, overlapped and taped seam",
+        "seam": "Heat-welded, overlapped and taped seam (light duty).",
+        "lengths": "50 m, 100 m",
         "temp": "50 °C",
         "pressures": [("50", "0.80"), ("70", "0.68"), ("100", "0.55"), ("125", "0.51"),
                       ("150", "0.47"), ("200", "0.45"), ("225", "0.44"), ("250", "0.42"),
@@ -1367,16 +1381,16 @@ def _cal_pressure(rows):
 def calibration_hose(key):
     d = CAL_HOSE[key]
     body = B.css() + EXTRA_CSS
-    body += head("Calibration Hose ", d["title_b"], CAL_SUBTITLE)
+    body += head("Calibration Hose ", d["title_b"], CAL_SUBTITLE_TPL.format(subseam=d["subseam"]))
 
     mat_rows = [
         ("material", "Material", d["material"]),
         ("coating", "Base fabric", "PVC-coated polyester"),
         ("textile", "Seam", d["seam"]),
-        ("certificate", "Compatible resins", "Polyester · Vinyl Ester · Epoxy"),
+        ("certificate", "Compatible resins", "UV Vinyl Ester · Silicate · Epoxy"),
     ]
     if d["lengths"]:
-        mat_rows.append(("length", "Standard lengths", d["lengths"]))
+        mat_rows.append(("length", "Standard roll lengths", d["lengths"]))
     mat_rows.append(("curing", "Maximum working temperature", d["temp"]))
 
     stor_rows = [(ic_, k, "".join(f'<div class="bl">{p}</div>' for p in ps))
@@ -1413,6 +1427,7 @@ def main():
             ("LR_Connection_Liners.pdf", connection()),
             ("LR_End_Cap_Glue.pdf", endcap()),
             ("LR_Calibration_Hose_Stitched_Welded.pdf", calibration_hose("stitched_welded")),
+            ("LR_Calibration_Hose_Stitched_Welded_Orange.pdf", calibration_hose("stitched_welded_orange")),
             ("LR_Calibration_Hose_Heat_Welded_MD.pdf", calibration_hose("heat_welded")),
             ("LR_Calibration_Hose_Welded_Violet.pdf", calibration_hose("welded_violet")),
             ("LR_MFE7516_Vinyl_Ester_SDS.pdf", sds()),
