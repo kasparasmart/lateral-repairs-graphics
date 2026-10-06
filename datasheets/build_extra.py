@@ -1359,6 +1359,19 @@ CAL_HOSE = {
                       ("300", "0.40")],
         "version": "001", "date": "11.02.24",
     },
+    "welded_pink": {
+        "file": "LR_Calibration_Hose_Welded_Pink.pdf",
+        "title_b": "Welded · Pink",
+        "material": "Welded LD — Pink",
+        "subseam": "overlapped and heat-welded seam",
+        "seam": "Overlapped and heat-welded seam (light duty).",
+        "lengths": "50 m, 100 m",
+        "temp": "50 °C",
+        "pressures": [("50", "0.80"), ("70", "0.68"), ("100", "0.55"), ("125", "0.51"),
+                      ("150", "0.47"), ("200", "0.45"), ("225", "0.44"), ("250", "0.42"),
+                      ("300", "0.40")],
+        "version": "001", "date": "11.02.24",
+    },
 }
 
 
@@ -1430,6 +1443,7 @@ def main():
             ("LR_Calibration_Hose_Stitched_Welded_Orange.pdf", calibration_hose("stitched_welded_orange")),
             ("LR_Calibration_Hose_Heat_Welded_MD.pdf", calibration_hose("heat_welded")),
             ("LR_Calibration_Hose_Welded_Violet.pdf", calibration_hose("welded_violet")),
+            ("LR_Calibration_Hose_Welded_Pink.pdf", calibration_hose("welded_pink")),
             ("LR_MFE7516_Vinyl_Ester_SDS.pdf", sds()),
             ("LR_Silicate_Resin_Summer_SDS.pdf", render_silicate("summer")),
             ("LR_Silicate_Resin_Winter_SDS.pdf", render_silicate("winter")),
